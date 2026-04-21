@@ -139,8 +139,14 @@ textarea{resize:vertical;line-height:1.5}
       </div>
     </div>
     <div>
-      <div class="sec"><div class="sec-title">📑 Главы (каждая с новой строки)</div>
-        <textarea id="chapters" rows="5" placeholder="Введение&#10;Основные преимущества&#10;Бонусы и акции&#10;Методы оплаты&#10;Заключение"></textarea>
+      <div class="sec">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">📑 Главы <button class="btn btn-sm" id="ch-bulk-btn" onclick="toggleBulkCh()" style="font-size:10px">📋 Списком</button></div>
+        <div id="ch-bulk">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">Все главы — каждая с новой строки:</div>
+          <textarea id="chapters-bulk" rows="5" placeholder="Введение&#10;Основные преимущества&#10;Бонусы и акции&#10;Методы оплаты&#10;Заключение"></textarea>
+          <button class="btn btn-sm" onclick="parseBulkChapters()" style="margin-top:4px">Добавить все главы</button>
+        </div>
+        <div id="ch-list"></div>
       </div>
       <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔑 Ключевые слова <button class="btn btn-sm" onclick="toggleBulkKW()" style="font-size:10px">📋 Списком</button></div>
         <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
@@ -236,7 +242,10 @@ const PROVIDERS=[
   {id:"grok",n:"Grok",models:["grok-3","grok-3-fast","grok-3-mini"],url:"https://console.x.ai"},
 ];
 
-let keywords=[], lsiWords=[], selectedStyle="third", selectedProvider="gemini", generatedCode="";
+let keywords=[], lsiWords=[], chapters=[], selectedStyle="third", selectedProvider="gemini", generatedCode="";
+const HEADINGS=["H1","H2","H3","H4","H5","H6"];
+const STRUCTS=[{id:"p",n:"Абзац",sh:"P"},{id:"pp",n:"Абзац+Абзац",sh:"P+P"},{id:"pt",n:"Абзац+Таблица",sh:"P+T"},{id:"ptp",n:"Абз+Табл+Абз",sh:"P+T+P"},{id:"plp",n:"Абз+Список+Абз",sh:"P+L+P"},{id:"ph",n:"Абз+HTML",sh:"P+HTML"},{id:"h",n:"Кастом HTML",sh:"HTML"}];
+const HC={H1:"#ef4444",H2:"#f59e0b",H3:"#22c55e",H4:"#3b82f6",H5:"#a855f7",H6:"#64748b"};
 
 // ===== INIT =====
 function init(){
@@ -293,6 +302,38 @@ function renderAPIKeys(){
 function saveKey(id){const v=document.getElementById("key-"+id).value.trim();if(v)localStorage.setItem("apikey_"+id,v);else localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ сохранён!")}
 function deleteKey(id){localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ удалён")}
 
+// ===== CHAPTERS =====
+function toggleBulkCh(){document.getElementById("ch-bulk").classList.toggle("hidden")}
+function parseBulkChapters(){
+  const t=document.getElementById("chapters-bulk");
+  const lines=t.value.split("\n").map(l=>l.trim()).filter(Boolean);
+  lines.forEach(l=>chapters.push({title:l,heading:"H2",structure:"p"}));
+  t.value="";document.getElementById("ch-bulk").classList.add("hidden");renderChapters();
+}
+function updateCh(i,field,val){chapters[i][field]=val;renderChapters()}
+function removeCh(i){chapters.splice(i,1);renderChapters()}
+function moveCh(i,d){const n=i+d;if(n<0||n>=chapters.length)return;[chapters[i],chapters[n]]=[chapters[n],chapters[i]];renderChapters()}
+function clearChapters(){chapters=[];renderChapters();document.getElementById("ch-bulk").classList.remove("hidden")}
+function renderChapters(){
+  const c=document.getElementById("ch-list");c.innerHTML="";
+  if(!chapters.length)return;
+  c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 4px"><span style="font-size:10px;color:#64748b">${chapters.length} глав</span><div><button onclick="toggleBulkCh()" style="background:none;border:none;color:#f59e0b;cursor:pointer;font-size:11px;margin-right:8px">+ Ещё</button><button onclick="clearChapters()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:11px">Удалить все</button></div></div>`;
+  chapters.forEach((ch,i)=>{
+    const hOpts=HEADINGS.map(h=>`<option value="${h}"${ch.heading===h?" selected":""}>${h}</option>`).join("");
+    const sOpts=STRUCTS.map(s=>`<option value="${s.id}"${ch.structure===s.id?" selected":""}>${s.sh}</option>`).join("");
+    c.innerHTML+=`<div class="kw-row" style="gap:4px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <button onclick="moveCh(${i},-1)" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:9px;padding:1px"${i===0?" disabled":""}">▲</button>
+        <button onclick="moveCh(${i},1)" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:9px;padding:1px"${i===chapters.length-1?" disabled":""}">▼</button>
+      </div>
+      <select onchange="updateCh(${i},'heading',this.value)" style="width:52px;padding:4px 2px;border-radius:4px;border:1px solid #1e293b;background:#0f172a;color:${HC[ch.heading]};font-size:11px;font-weight:700;text-align:center">${hOpts}</select>
+      <input type="text" value="${ch.title.replace(/"/g,'&quot;')}" onchange="updateCh(${i},'title',this.value)" style="flex:1;min-width:100px;background:transparent;border:none;padding:4px;font-size:12px;color:#e2e8f0">
+      <select onchange="updateCh(${i},'structure',this.value)" style="width:75px;padding:4px 2px;border-radius:4px;border:1px solid #1e293b;background:#0f172a;color:#94a3b8;font-size:10px">${sOpts}</select>
+      <button onclick="removeCh(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px">✕</button>
+    </div>`;
+  });
+}
+
 // ===== KEYWORDS =====
 function addKW(){const i=document.getElementById("kw-input"),c=document.getElementById("kw-count"),w=i.value.trim();if(!w||keywords.find(k=>k.word===w))return;keywords.push({word:w,count:parseInt(c.value)||3});i.value="";renderKW()}
 function toggleBulkKW(){document.getElementById("bulk-kw").classList.toggle("hidden")}
@@ -336,9 +377,11 @@ function buildPrompt(){
   const st=STYLES.find(s=>s.id===selectedStyle)?.n||"";
   const kwStr=keywords.length?keywords.map(k=>`- "${k.word}" — ровно ${k.count} раз(а)`).join("\n"):"Не указаны";
   const lsiStr=lsiWords.length?lsiWords.join(", "):"Не указаны";
-  const chText=document.getElementById("chapters").value;
   let chBlock="";
-  if(chText.trim()){const lines=chText.split("\n").map(l=>l.trim()).filter(Boolean);chBlock="\nСТРУКТУРА ПО ГЛАВАМ:\n"+lines.map((l,i)=>`${i+1}. <H2>: "${l}"`).join("\n")+"\n"}
+  if(chapters.length){
+    const sNames={p:"Абзац",pp:"Абзац+Абзац",pt:"Абзац+Таблица",ptp:"Абз+Табл+Абз",plp:"Абз+Список+Абз",ph:"Абз+HTML",h:"Кастом HTML"};
+    chBlock="\nСТРУКТУРА ПО ГЛАВАМ (ОБЯЗАТЕЛЬНО):\n"+chapters.map((ch,i)=>`${i+1}. <${ch.heading}>: "${ch.title}" — структура: ${sNames[ch.structure]||ch.structure}`).join("\n")+"\nСТРОГО следуй структуре и уровню заголовка.\n- P=<p>, P+P=два <p>, P+T=<p>+<table>, P+T+P=<p>+<table>+<p>\n- P+L+P=<p>+<ul>/<ol>+<p>, P+HTML=<p>+стилизованный блок, HTML=только блок\n"
+  }
   let p=`Ты — senior SEO-копирайтер и WordPress-разработчик. Напиши SEO-статью как ГОТОВЫЙ HTML для WordPress.\n\n`;
   if(topic)p+=`ТЕМА: ${topic}\n\n`;
   p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Лицензия: ${lic}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
