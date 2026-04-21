@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Article Writer Pro by Septum</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:linear-gradient(145deg,#020617,#0a1628,#0f172a);color:#cbd5e1;min-height:100vh;-webkit-text-size-adjust:100%}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:1px solid #1e293b;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+.logo{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#0f172a;flex-shrink:0}
+.tabs{display:flex;gap:2px;background:#0f172a;border-radius:6px;padding:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+.tab{padding:8px 14px;border-radius:5px;border:none;background:transparent;color:#64748b;cursor:pointer;font-size:11px;font-weight:500;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:rgba(245,158,11,.2)}
+.tab.active{background:#1e293b;color:#f1f5f9}
+.tab:disabled{opacity:.3;cursor:not-allowed}
+.container{max-width:1500px;margin:0 auto;padding:12px 12px 40px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sec{background:#0f172a;border-radius:10px;border:1px solid #1e293b;padding:12px;margin-bottom:10px}
+.sec-title{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:8px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px 10px;border-radius:7px;border:1px solid #1e293b;background:#0a1220;color:#e2e8f0;font-size:14px;outline:none;font-family:inherit;-webkit-appearance:none}
+select{cursor:pointer}
+textarea{resize:vertical;line-height:1.5}
+.btn{padding:10px 14px;border-radius:7px;border:none;background:#f59e0b;color:#0f172a;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn:active{transform:scale(.97)}
+.btn-gen{width:100%;padding:16px;font-size:15px;box-shadow:0 4px 20px #f59e0b44}
+.btn-sm{padding:5px 10px;font-size:11px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;background:#172032;border:1px solid #334155;font-size:12px;color:#e2e8f0;margin:2px}
+.tag button{background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;padding:0 2px}
+.kw-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;background:#080f1a;border:1px solid #1e293b;margin-bottom:3px}
+.kw-row input[type=number]{width:48px;text-align:center;padding:4px;font-weight:700;color:#f59e0b;background:#0f172a;border:1px solid #1e293b;border-radius:4px;font-size:13px}
+.kw-row span{font-size:13px}
+.radio{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.radio.active{background:#172032;border-color:#334155}
+.radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #475569;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.radio.active .radio-dot{border-color:#f59e0b}
+.radio-dot-inner{width:8px;height:8px;border-radius:50%;background:#f59e0b;display:none}
+.radio.active .radio-dot-inner{display:block}
+.error{padding:12px;border-radius:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);font-size:12px;color:#fca5a5;margin-top:8px;white-space:pre-wrap;word-break:break-all}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.overlay-box{background:#0f172a;border:1px solid #1e293b;border-radius:20px;padding:30px;text-align:center;box-shadow:0 0 60px rgba(245,158,11,.15);max-width:400px;width:100%}
+.spinner{width:50px;height:50px;border:3px solid #1e293b;border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.code-wrap{display:flex;border-radius:8px;overflow:hidden;border:1px solid #1e293b}
+.code-lines{padding:12px 8px;text-align:right;color:#475569;background:#080f1a;user-select:none;line-height:1.6;min-width:36px;border-right:1px solid #1e293b;font-family:'JetBrains Mono',monospace;font-size:12px}
+.code-area{flex:1;background:#0a1220;color:#e2e8f0;border:none;outline:none;resize:none;padding:12px;line-height:1.6;font-family:'JetBrains Mono',monospace;font-size:12px;min-height:300px;tab-size:2;width:100%}
+.preview-frame{width:100%;height:500px;border:none;background:#fff;border-radius:0 0 8px 8px}
+.preview-bar{background:#0f172a;padding:6px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #1e293b;border-radius:8px 8px 0 0}
+.dot{width:8px;height:8px;border-radius:50%}
+.settings-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:7px;background:#0a1220;border:1px solid #1e293b;margin-bottom:8px;flex-wrap:wrap}
+.settings-row input[type=text]{flex:1;min-width:0}
+.settings-row .btn{flex-shrink:0}
+.provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.provider-btn{padding:10px 8px;border-radius:7px;border:1px solid transparent;background:#0a1220;cursor:pointer;text-align:left;font-size:12px;font-weight:600;color:#cbd5e1;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.provider-btn.active{background:rgba(245,158,11,.1);border-color:#f59e0b}
+.hidden{display:none}
+
+/* ===== TABLET (< 900px) ===== */
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .header{padding:8px 12px}
+  .tabs{width:100%;overflow-x:auto}
+  .container{padding:8px 8px 30px}
+  .preview-frame{height:400px}
+}
+
+/* ===== MOBILE (< 600px) ===== */
+@media(max-width:600px){
+  .header{flex-direction:column;align-items:flex-start;gap:6px}
+  .tabs{width:100%;padding:2px;gap:1px}
+  .tab{padding:6px 8px;font-size:10px}
+  .sec{padding:10px;margin-bottom:8px}
+  .sec-title{font-size:12px}
+  input[type=text],input[type=number],select,textarea{font-size:16px;padding:10px}
+  .btn-gen{padding:16px;font-size:14px}
+  .provider-grid{grid-template-columns:1fr}
+  .provider-btn{padding:12px 10px;font-size:13px}
+  .radio{padding:10px}
+  .kw-row{flex-wrap:wrap}
+  .kw-row span{font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .code-area{font-size:11px;min-height:250px}
+  .code-lines{font-size:11px;min-width:28px;padding:12px 4px}
+  .preview-frame{height:350px}
+  .overlay-box{padding:24px 20px;border-radius:16px}
+  .settings-row{flex-direction:column;align-items:stretch;gap:6px}
+  .settings-row input[type=text]{width:100%}
+  .settings-row .btn{width:100%}
+  .error{font-size:11px}
+  .tag{font-size:11px;padding:4px 8px}
+}
+
+/* ===== SMALL MOBILE (< 400px) ===== */
+@media(max-width:400px){
+  .header{padding:6px 8px}
+  .container{padding:6px 6px 24px}
+  .tab{padding:5px 6px;font-size:9px}
+  .logo{width:28px;height:28px;font-size:14px}
+  input[type=text],input[type=number],select,textarea{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="logo">A</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#f1f5f9">Article Writer Pro <span style="color:#22d3ee;font-size:12px;font-weight:600">by Septum</span></div>
+      <div style="font-size:9px;color:#64748b">SEO-генератор • AI • WordPress</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
+    <button class="tab" onclick="switchTab('settings',this)">🔑 API Ключи</button>
+    <button class="tab" id="tab-code" disabled onclick="switchTab('code',this)">⟨/⟩ Код</button>
+    <button class="tab" id="tab-preview" disabled onclick="switchTab('preview',this)">👁 Просмотр</button>
+    <button class="tab" id="tab-split" disabled onclick="switchTab('split',this)">◫ Код+Просмотр</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- FORM -->
+  <div id="page-form" class="grid">
+    <div>
+      <div class="sec"><div class="sec-title">📌 Тема статьи</div><input type="text" id="topic" placeholder="Обзор казино — бонусы, игры, регистрация"></div>
+      <div class="sec"><div class="sec-title">🌍 Локализация</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+          <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Язык</div><select id="lang"></select></div>
+          <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Страна</div><select id="country"></select></div>
+          <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Валюта</div><select id="currency"></select></div>
+        </div>
+      </div>
+      <div class="sec"><div class="sec-title">✍️ Стиль</div><div id="styles-list"></div></div>
+      <div class="sec"><div class="sec-title">🔐 Лицензия</div><select id="license"></select></div>
+      <div class="sec"><div class="sec-title">🤖 AI Провайдер</div><div class="provider-grid" id="provider-grid"></div>
+        <div style="margin-top:6px"><div style="font-size:10px;color:#64748b;margin-bottom:2px">Модель</div><select id="model-select"></select></div>
+      </div>
+    </div>
+    <div>
+      <div class="sec"><div class="sec-title">📑 Главы (каждая с новой строки)</div>
+        <textarea id="chapters" rows="5" placeholder="Введение&#10;Основные преимущества&#10;Бонусы и акции&#10;Методы оплаты&#10;Заключение"></textarea>
+      </div>
+      <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔑 Ключевые слова <button class="btn btn-sm" onclick="toggleBulkKW()" style="font-size:10px">📋 Списком</button></div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+          <input type="text" id="kw-input" style="flex:1;min-width:120px" placeholder="Ключевое слово..." onkeydown="if(event.key==='Enter')addKW()">
+          <input type="number" id="kw-count" value="3" min="1" max="99" style="width:50px;text-align:center">
+          <button class="btn btn-sm" onclick="addKW()">+</button>
+        </div>
+        <div id="bulk-kw" class="hidden"><textarea id="bulk-kw-text" rows="4" placeholder="casino online&#10;slot machine&#10;bonus benvenuto" style="margin-bottom:4px"></textarea>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn btn-sm" onclick="parseBulkKW()">Добавить все</button><span style="font-size:10px;color:#64748b">По умолч:</span><input type="number" id="bulk-kw-def" value="3" min="1" style="width:50px;text-align:center;padding:6px;font-size:14px"></div>
+        </div>
+        <div id="kw-list"></div>
+      </div>
+      <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔗 LSI слова <button class="btn btn-sm" onclick="toggleBulkLSI()" style="font-size:10px">📋 Списком</button></div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="lsi-input" placeholder="LSI слово..." onkeydown="if(event.key==='Enter')addLSI()">
+          <button class="btn btn-sm" onclick="addLSI()">+</button>
+        </div>
+        <div id="bulk-lsi" class="hidden"><textarea id="bulk-lsi-text" rows="3" placeholder="bonus casino&#10;gioco d'azzardo" style="margin-bottom:4px"></textarea><button class="btn btn-sm" onclick="parseBulkLSI()">Добавить все</button></div>
+        <div id="lsi-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+      <div class="sec"><div class="sec-title">🌐 Источник</div><input type="text" id="source" placeholder="https://example.com"></div>
+      <div class="sec"><div class="sec-title">📝 Заметки</div><textarea id="notes" rows="3" placeholder="Требования, CTA, запреты..."></textarea></div>
+      <button class="btn btn-gen" id="gen-btn" onclick="generate()">⚡ Сгенерировать статью</button>
+      <div id="error-box" class="error hidden"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="hidden" style="max-width:700px;margin:0 auto">
+    <div class="sec"><div class="sec-title">🔑 API Ключи</div>
+      <p style="font-size:11px;color:#64748b;margin-bottom:12px">Ключи сохраняются в localStorage вашего браузера. Никуда не передаются кроме API провайдера.</p>
+      <div id="api-keys-list"></div>
+    </div>
+  </div>
+
+  <!-- CODE -->
+  <div id="page-code" class="hidden">
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <button class="btn btn-sm" onclick="copyCode()">📋 Копировать</button>
+    </div>
+    <div class="code-wrap"><div class="code-lines" id="code-lines"></div><textarea class="code-area" id="code-area" spellcheck="false" oninput="updateLines()"></textarea></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="page-preview" class="hidden">
+    <div style="border-radius:8px;overflow:hidden;border:1px solid #1e293b">
+      <div class="preview-bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#eab308"></span><span class="dot" style="background:#22c55e"></span><span style="flex:1;text-align:center;font-size:10px;color:#64748b">WordPress Preview</span></div>
+      <iframe id="preview-iframe" class="preview-frame" sandbox="allow-same-origin"></iframe>
+    </div>
+  </div>
+
+  <!-- SPLIT -->
+  <div id="page-split" class="hidden">
+    <div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn btn-sm" onclick="copyCode()">📋 Копировать</button></div>
+    <div class="grid">
+      <div><div style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:4px;text-transform:uppercase">HTML Код</div>
+        <div class="code-wrap"><div class="code-lines" id="split-lines"></div><textarea class="code-area" id="split-area" spellcheck="false" oninput="updateSplitLines();updateSplitPreview()"></textarea></div>
+      </div>
+      <div><div style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:4px;text-transform:uppercase">Просмотр</div>
+        <div style="border-radius:8px;overflow:hidden;border:1px solid #1e293b">
+          <div class="preview-bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#eab308"></span><span class="dot" style="background:#22c55e"></span></div>
+          <iframe id="split-iframe" class="preview-frame" sandbox="allow-same-origin"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <div style="font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:6px" id="overlay-title">Генерация статьи...</div>
+    <div style="font-size:13px;color:#94a3b8" id="overlay-sub">Отправка запроса...</div>
+    <div style="font-size:11px;color:#f59e0b;margin-top:8px" id="overlay-provider"></div>
+    <div style="font-size:10px;color:#475569;margin-top:12px">Может занять 1–3 минуты</div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const LANGS=[{c:"ru",n:"Русский"},{c:"en",n:"English"},{c:"de",n:"Deutsch"},{c:"fr",n:"Français"},{c:"es",n:"Español"},{c:"it",n:"Italiano"},{c:"pt",n:"Português"},{c:"nl",n:"Nederlands"},{c:"pl",n:"Polski"},{c:"cs",n:"Čeština"},{c:"hu",n:"Magyar"},{c:"ro",n:"Română"},{c:"bg",n:"Български"},{c:"hr",n:"Hrvatski"},{c:"sr",n:"Српски"},{c:"tr",n:"Türkçe"},{c:"uk",n:"Українська"},{c:"hy",n:"Հայերեն"},{c:"ka",n:"ქართული"},{c:"az",n:"Azərbaycan"},{c:"ja",n:"日本語"},{c:"ko",n:"한국어"},{c:"zh",n:"中文"},{c:"ar",n:"العربية"}];
+const COUNTRIES=["Россия","США","Великобритания","Германия","Франция","Испания","Италия","Канада","Австралия","Япония","Турция","Индия","Армения","Грузия","Казахстан","Украина","Нидерланды","Швеция","Польша","Чехия","Венгрия","Греция","Португалия","Австрия","Швейцария","Бельгия"];
+const CURS=[{c:"USD",s:"$"},{c:"EUR",s:"€"},{c:"GBP",s:"£"},{c:"USDT",s:"₮"},{c:"CHF",s:"Fr"},{c:"PLN",s:"zł"},{c:"CZK",s:"Kč"},{c:"RUB",s:"₽"},{c:"UAH",s:"₴"},{c:"AMD",s:"֏"},{c:"GEL",s:"₾"},{c:"TRY",s:"₺"},{c:"JPY",s:"¥"}];
+const STYLES=[{id:"brand",n:"От бренда",d:"От имени бренда",i:"🏢"},{id:"expert",n:"От эксперта",d:"Экспертная позиция",i:"🎓"},{id:"team",n:"От команды",d:"Мы как команда",i:"👥"},{id:"player",n:"От игрока",d:"Личный опыт",i:"🎮"},{id:"third",n:"От третьего лица",d:"Объективный обзор",i:"📰"}];
+const LICENSES=["Curacao","MGA (Malta)","UKGC","Gibraltar","Isle of Man","Kahnawake","PAGCOR","Costa Rica","Anjouan"];
+const PROVIDERS=[
+  {id:"gemini",n:"Gemini",models:["gemini-2.5-flash","gemini-2.0-flash","gemini-2.5-pro"],url:"https://aistudio.google.com/apikey"},
+  {id:"claude",n:"Claude",models:["claude-sonnet-4-20250514","claude-opus-4-6","claude-haiku-4-5-20251001"],url:"https://console.anthropic.com"},
+  {id:"openai",n:"OpenAI",models:["gpt-4.1","gpt-4.1-mini","gpt-4o","gpt-4o-mini"],url:"https://platform.openai.com/api-keys"},
+  {id:"deepseek",n:"DeepSeek",models:["deepseek-chat","deepseek-reasoner"],url:"https://platform.deepseek.com"},
+  {id:"mistral",n:"Mistral",models:["mistral-large-latest","mistral-small-latest"],url:"https://console.mistral.ai"},
+  {id:"grok",n:"Grok",models:["grok-3","grok-3-fast","grok-3-mini"],url:"https://console.x.ai"},
+];
+
+let keywords=[], lsiWords=[], selectedStyle="third", selectedProvider="gemini", generatedCode="";
+
+// ===== INIT =====
+function init(){
+  const ls=document.getElementById("lang"); LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)}); ls.value="de";
+  const cs=document.getElementById("country"); COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;cs.appendChild(o)}); cs.value="Германия";
+  const cu=document.getElementById("currency"); CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.s+" "+c.c;cu.appendChild(o)}); cu.value="EUR";
+  const li=document.getElementById("license"); LICENSES.forEach(l=>{const o=document.createElement("option");o.value=l;o.textContent=l;li.appendChild(o)});
+  renderStyles(); renderProviders(); renderAPIKeys(); updateModels();
+}
+
+function renderStyles(){
+  const c=document.getElementById("styles-list"); c.innerHTML="";
+  STYLES.forEach(s=>{
+    const d=document.createElement("div");d.className="radio"+(selectedStyle===s.id?" active":"");
+    d.innerHTML=`<div class="radio-dot"><div class="radio-dot-inner"></div></div><span style="font-size:14px">${s.i}</span><div><div style="font-size:11px;font-weight:600;color:#e2e8f0">${s.n}</div><div style="font-size:9px;color:#64748b">${s.d}</div></div>`;
+    d.onclick=()=>{selectedStyle=s.id;renderStyles()};c.appendChild(d);
+  });
+}
+
+function renderProviders(){
+  const g=document.getElementById("provider-grid"); g.innerHTML="";
+  PROVIDERS.forEach(p=>{
+    const b=document.createElement("button");b.className="provider-btn"+(selectedProvider===p.id?" active":"");
+    const key=localStorage.getItem("apikey_"+p.id);
+    b.innerHTML=`${p.n} ${key?"🟢":""}`;
+    b.onclick=()=>{selectedProvider=p.id;renderProviders();updateModels()};g.appendChild(b);
+  });
+}
+
+function updateModels(){
+  const sel=document.getElementById("model-select");sel.innerHTML="";
+  const p=PROVIDERS.find(x=>x.id===selectedProvider);
+  if(p) p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o)});
+}
+
+function renderAPIKeys(){
+  const c=document.getElementById("api-keys-list");c.innerHTML="";
+  PROVIDERS.forEach(p=>{
+    const key=localStorage.getItem("apikey_"+p.id)||"";
+    const hasKey=key?"🟢":"⚪";
+    c.innerHTML+=`<div style="background:#0a1220;border:1px solid #1e293b;border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong style="font-size:13px;color:#e2e8f0">${hasKey} ${p.n}</strong>
+        <a href="${p.url}" target="_blank" style="font-size:11px;color:#3b82f6">Получить ключ ↗</a>
+      </div>
+      <input type="text" id="key-${p.id}" value="${key}" placeholder="Вставьте ${p.n} API ключ..." style="margin-bottom:8px">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="saveKey('${p.id}')" style="flex:1;padding:10px;font-size:13px">💾 Сохранить</button>
+        <button class="btn btn-sm" onclick="deleteKey('${p.id}')" style="flex:0;padding:10px;font-size:13px;background:#ef4444">🗑</button>
+      </div>
+    </div>`;
+  });
+}
+function saveKey(id){const v=document.getElementById("key-"+id).value.trim();if(v)localStorage.setItem("apikey_"+id,v);else localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ сохранён!")}
+function deleteKey(id){localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ удалён")}
+
+// ===== KEYWORDS =====
+function addKW(){const i=document.getElementById("kw-input"),c=document.getElementById("kw-count"),w=i.value.trim();if(!w||keywords.find(k=>k.word===w))return;keywords.push({word:w,count:parseInt(c.value)||3});i.value="";renderKW()}
+function toggleBulkKW(){document.getElementById("bulk-kw").classList.toggle("hidden")}
+function parseBulkKW(){const t=document.getElementById("bulk-kw-text"),d=parseInt(document.getElementById("bulk-kw-def").value)||3;const lines=t.value.split("\n").map(l=>l.trim()).filter(Boolean);lines.forEach(w=>{if(!keywords.find(k=>k.word===w))keywords.push({word:w,count:d})});t.value="";document.getElementById("bulk-kw").classList.add("hidden");renderKW()}
+function removeKW(i){keywords.splice(i,1);renderKW()}
+function updateKWCount(i,v){keywords[i].count=Math.max(1,parseInt(v)||1);renderKW()}
+function renderKW(){
+  const c=document.getElementById("kw-list");c.innerHTML="";
+  keywords.forEach((k,i)=>{c.innerHTML+=`<div class="kw-row"><span style="flex:1;font-size:12px">${k.word}</span><span style="font-size:9px;color:#64748b">раз:</span><input type="number" value="${k.count}" min="1" onchange="updateKWCount(${i},this.value)"><button onclick="removeKW(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`});
+}
+
+// ===== LSI =====
+function addLSI(){const i=document.getElementById("lsi-input"),w=i.value.trim();if(!w||lsiWords.includes(w))return;lsiWords.push(w);i.value="";renderLSI()}
+function toggleBulkLSI(){document.getElementById("bulk-lsi").classList.toggle("hidden")}
+function parseBulkLSI(){const t=document.getElementById("bulk-lsi-text");t.value.split("\n").map(l=>l.trim()).filter(Boolean).forEach(w=>{if(!lsiWords.includes(w))lsiWords.push(w)});t.value="";document.getElementById("bulk-lsi").classList.add("hidden");renderLSI()}
+function removeLSI(i){lsiWords.splice(i,1);renderLSI()}
+function renderLSI(){const c=document.getElementById("lsi-list");c.innerHTML="";lsiWords.forEach((w,i)=>{c.innerHTML+=`<span class="tag" style="background:#1a2a3a;border-color:#2a4a6a">${w}<button onclick="removeLSI(${i})">✕</button></span>`})}
+
+// ===== TABS =====
+function switchTab(id,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  ["form","settings","code","preview","split"].forEach(p=>document.getElementById("page-"+p).classList.add("hidden"));
+  document.getElementById("page-"+id).classList.remove("hidden");
+  if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
+  if(id==="preview")renderPreview("preview-iframe",generatedCode);
+  if(id==="split"){document.getElementById("split-area").value=generatedCode;updateSplitLines();renderPreview("split-iframe",generatedCode)}
+}
+function enableOutputTabs(){["tab-code","tab-preview","tab-split"].forEach(id=>{document.getElementById(id).disabled=false})}
+
+// ===== CODE EDITOR =====
+function updateLines(){const a=document.getElementById("code-area"),l=document.getElementById("code-lines");l.innerHTML=a.value.split("\n").map((_,i)=>i+1).join("<br>")}
+function updateSplitLines(){const a=document.getElementById("split-area"),l=document.getElementById("split-lines");l.innerHTML=a.value.split("\n").map((_,i)=>i+1).join("<br>")}
+function updateSplitPreview(){renderPreview("split-iframe",document.getElementById("split-area").value)}
+function renderPreview(id,code){const f=document.getElementById(id);f.srcdoc=`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:20px;color:#1a1a2e;background:#fff;line-height:1.7}img{max-width:100%;height:auto}h1,h2,h3{color:#0f172a}a{color:#2563eb}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:10px}th{background:#f1f5f9}</style></head><body>${code}</body></html>`}
+function copyCode(){navigator.clipboard.writeText(generatedCode||document.getElementById("code-area").value);alert("Код скопирован!")}
+
+// ===== PROMPT =====
+function buildPrompt(){
+  const topic=document.getElementById("topic").value, lang=LANGS.find(l=>l.c===document.getElementById("lang").value)?.n, country=document.getElementById("country").value, cur=document.getElementById("currency").value, lic=document.getElementById("license").value, src=document.getElementById("source").value, notes=document.getElementById("notes").value;
+  const st=STYLES.find(s=>s.id===selectedStyle)?.n||"";
+  const kwStr=keywords.length?keywords.map(k=>`- "${k.word}" — ровно ${k.count} раз(а)`).join("\n"):"Не указаны";
+  const lsiStr=lsiWords.length?lsiWords.join(", "):"Не указаны";
+  const chText=document.getElementById("chapters").value;
+  let chBlock="";
+  if(chText.trim()){const lines=chText.split("\n").map(l=>l.trim()).filter(Boolean);chBlock="\nСТРУКТУРА ПО ГЛАВАМ:\n"+lines.map((l,i)=>`${i+1}. <H2>: "${l}"`).join("\n")+"\n"}
+  let p=`Ты — senior SEO-копирайтер и WordPress-разработчик. Напиши SEO-статью как ГОТОВЫЙ HTML для WordPress.\n\n`;
+  if(topic)p+=`ТЕМА: ${topic}\n\n`;
+  p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Лицензия: ${lic}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
+  if(src)p+=`\nИСТОЧНИК: ${src}\n`;
+  if(notes)p+=`\nТРЕБОВАНИЯ: ${notes}\n`;
+  p+=`\nТРЕБОВАНИЯ К HTML:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html.\n2. НЕ используй <html>,<head>,<body>,<style>,<script>, CSS классы. ТОЛЬКО inline style="".\n3. Оборачивай в <article style="...">. Семантика: section,h1-h6,p,ul,ol,table,blockquote.\n4. Таблицы: width:100%;border-collapse:collapse; ячейки padding:12px;border:1px solid #ddd;\n5. SEO: один H1, иерархия h1→h2→h3.\n\nНачинай сразу с <article`;
+  return p;
+}
+
+// ===== API CALLS =====
+async function callGemini(prompt,apiKey,model){
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:8192}})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(`Gemini ${r.status}: ${e?.error?.message||r.statusText}`)}
+  const d=await r.json();
+  if(d.promptFeedback?.blockReason)throw new Error("Gemini: контент заблокирован — "+d.promptFeedback.blockReason);
+  return d.candidates?.[0]?.content?.parts?.map(p=>p.text).join("")||"";
+}
+
+async function callClaude(prompt,apiKey,model){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+    body:JSON.stringify({model,max_tokens:8192,messages:[{role:"user",content:prompt}]})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(`Claude ${r.status}: ${e?.error?.message||r.statusText}`)}
+  const d=await r.json();return d.content?.map(b=>b.text||"").join("")||"";
+}
+
+async function callOpenAICompat(prompt,apiKey,model,baseUrl){
+  const r=await fetch(baseUrl,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
+    body:JSON.stringify({model,max_tokens:8192,messages:[{role:"user",content:prompt}]})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(`API ${r.status}: ${e?.error?.message||r.statusText}`)}
+  const d=await r.json();return d.choices?.[0]?.message?.content||"";
+}
+
+async function callAI(prompt){
+  const apiKey=localStorage.getItem("apikey_"+selectedProvider);
+  if(!apiKey)throw new Error(`API ключ для ${selectedProvider} не установлен. Перейдите во вкладку "API Ключи".`);
+  const model=document.getElementById("model-select").value;
+  switch(selectedProvider){
+    case"gemini":return callGemini(prompt,apiKey,model);
+    case"claude":return callClaude(prompt,apiKey,model);
+    case"openai":return callOpenAICompat(prompt,apiKey,model,"https://api.openai.com/v1/chat/completions");
+    case"deepseek":return callOpenAICompat(prompt,apiKey,model,"https://api.deepseek.com/chat/completions");
+    case"mistral":return callOpenAICompat(prompt,apiKey,model,"https://api.mistral.ai/v1/chat/completions");
+    case"grok":return callOpenAICompat(prompt,apiKey,model,"https://api.x.ai/v1/chat/completions");
+    default:throw new Error("Неизвестный провайдер");
+  }
+}
+
+// ===== GENERATE =====
+async function generate(){
+  const overlay=document.getElementById("overlay"),errBox=document.getElementById("error-box");
+  errBox.classList.add("hidden");
+  const p=PROVIDERS.find(x=>x.id===selectedProvider);
+  document.getElementById("overlay-title").textContent="Генерация статьи...";
+  document.getElementById("overlay-sub").textContent="Отправка запроса...";
+  document.getElementById("overlay-provider").textContent=`${p?.n} • ${document.getElementById("model-select").value}`;
+  overlay.classList.remove("hidden");
+  try{
+    const prompt=buildPrompt();
+    document.getElementById("overlay-sub").textContent="Ожидание ответа от AI...";
+    let html=await callAI(prompt);
+    html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+    generatedCode=html;enableOutputTabs();
+    overlay.classList.add("hidden");
+    switchTab("split",document.querySelector(".tab:last-child"));
+  }catch(e){
+    overlay.classList.add("hidden");
+    errBox.textContent="⚠ "+e.message;errBox.classList.remove("hidden");
+  }
+}
+
+init();
+</script>
+</body>
+</html>
