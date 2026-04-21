@@ -167,6 +167,15 @@ textarea{resize:vertical;line-height:1.5}
         <div id="bulk-lsi" class="hidden"><textarea id="bulk-lsi-text" rows="3" placeholder="bonus casino&#10;gioco d'azzardo" style="margin-bottom:4px"></textarea><button class="btn btn-sm" onclick="parseBulkLSI()">Добавить все</button></div>
         <div id="lsi-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
       </div>
+      <div class="sec"><div class="sec-title">📎 Файлы (текст, картинки, видео)</div>
+        <div onclick="document.getElementById('file-input').click()" style="border:2px dashed #334155;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
+          <input type="file" id="file-input" multiple accept="*/*" style="display:none" onchange="handleFiles(this.files)">
+          <div style="font-size:20px;margin-bottom:4px">📁</div>
+          <div style="font-size:12px;font-weight:600;color:#64748b">Нажмите для загрузки файлов</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px">Текст, документы, изображения, видео</div>
+        </div>
+        <div id="files-list"></div>
+      </div>
       <div class="sec"><div class="sec-title">🌐 Источник</div><input type="text" id="source" placeholder="https://example.com"></div>
       <div class="sec"><div class="sec-title">📝 Заметки</div><textarea id="notes" rows="3" placeholder="Требования, CTA, запреты..."></textarea></div>
       <button class="btn btn-gen" id="gen-btn" onclick="generate()">⚡ Сгенерировать статью</button>
@@ -352,6 +361,57 @@ function parseBulkLSI(){const t=document.getElementById("bulk-lsi-text");t.value
 function removeLSI(i){lsiWords.splice(i,1);renderLSI()}
 function renderLSI(){const c=document.getElementById("lsi-list");c.innerHTML="";lsiWords.forEach((w,i)=>{c.innerHTML+=`<span class="tag" style="background:#1a2a3a;border-color:#2a4a6a">${w}<button onclick="removeLSI(${i})">✕</button></span>`})}
 
+// ===== FILES =====
+let uploadedFiles=[];
+const imgExts=["jpg","jpeg","png","gif","webp","svg","bmp","heic"];
+const vidExts=["mp4","mov","avi","mkv","webm"];
+function getFileType(ext){if(imgExts.includes(ext))return"image";if(vidExts.includes(ext))return"video";return"text"}
+function getFileIcon(type){return type==="image"?"🖼":"video"?"🎬":"📄"}
+function formatSize(b){if(b<1024)return b+"B";if(b<1048576)return(b/1024).toFixed(1)+"KB";return(b/1048576).toFixed(1)+"MB"}
+
+function handleFiles(fileList){
+  Array.from(fileList).forEach(file=>{
+    if(uploadedFiles.find(f=>f.name===file.name))return;
+    const ext=file.name.split(".").pop().toLowerCase();
+    const type=getFileType(ext);
+    const entry={name:file.name,size:formatSize(file.size),ext,type,content:"",preview:null};
+    if(type==="text"){
+      const reader=new FileReader();
+      reader.onload=e=>{entry.content=(e.target.result||"").substring(0,20000);uploadedFiles.push(entry);renderFiles()};
+      reader.readAsText(file);
+    } else if(type==="image"){
+      entry.preview=URL.createObjectURL(file);
+      uploadedFiles.push(entry);renderFiles();
+    } else {
+      uploadedFiles.push(entry);renderFiles();
+    }
+  });
+}
+function removeFile(i){if(uploadedFiles[i].preview)URL.revokeObjectURL(uploadedFiles[i].preview);uploadedFiles.splice(i,1);renderFiles()}
+function clearFiles(){uploadedFiles.forEach(f=>{if(f.preview)URL.revokeObjectURL(f.preview)});uploadedFiles=[];renderFiles()}
+function renderFiles(){
+  const c=document.getElementById("files-list");c.innerHTML="";
+  if(!uploadedFiles.length)return;
+  c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 4px"><span style="font-size:10px;color:#64748b">${uploadedFiles.length} файл(ов)</span><button onclick="clearFiles()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:11px">Удалить все</button></div>`;
+  uploadedFiles.forEach((f,i)=>{
+    const thumb=f.type==="image"&&f.preview?`<img src="${f.preview}" style="width:32px;height:32px;border-radius:5px;object-fit:cover;flex-shrink:0">`:`<span style="font-size:18px;width:32px;text-align:center;flex-shrink:0">${getFileIcon(f.type)}</span>`;
+    c.innerHTML+=`<div class="kw-row" style="gap:8px">
+      ${thumb}
+      <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div><div style="font-size:9px;color:#64748b">${f.size} · ${f.type==="text"?f.content.length+" симв.":f.type==="image"?"Изображение":"Видео"}</div></div>
+      <span style="font-size:8px;color:#475569;padding:2px 6px;background:#172032;border-radius:4px">${f.ext.toUpperCase()}</span>
+      <button onclick="removeFile(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button>
+    </div>`;
+  });
+}
+function getFilesPrompt(){
+  if(!uploadedFiles.length)return"";
+  return"\n\nЗАГРУЖЕННЫЕ ФАЙЛЫ:\n"+uploadedFiles.map(f=>{
+    if(f.type==="text")return`📄 "${f.name}":\n${f.content.substring(0,5000)}`;
+    if(f.type==="image")return`🖼 Изображение "${f.name}" (${f.size}) — учти в статье`;
+    return`🎬 Видео "${f.name}" (${f.size}) — учти в статье`;
+  }).join("\n\n");
+}
+
 // ===== TABS =====
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
@@ -387,6 +447,7 @@ function buildPrompt(){
   p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Лицензия: ${lic}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
   if(src)p+=`\nИСТОЧНИК: ${src}\n`;
   if(notes)p+=`\nТРЕБОВАНИЯ: ${notes}\n`;
+  p+=getFilesPrompt();
   p+=`\nТРЕБОВАНИЯ К HTML — ФОРМАТ WORDPRESS GUTENBERG БЛОКОВ:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html. Без <html>,<head>,<body>,<script>.\n2. КАЖДЫЙ элемент оборачивай в Gutenberg-комментарии:\n   - Заголовки: <!-- wp:heading {"level":2} -->\\n<h2>текст</h2>\\n<!-- /wp:heading -->\n   - Абзацы: <!-- wp:paragraph -->\\n<p>текст</p>\\n<!-- /wp:paragraph -->\n   - Списки: <!-- wp:list -->\\n<ul><li>...</li></ul>\\n<!-- /wp:list -->\n   - Таблицы: <!-- wp:html -->\\n<table style="width:100%;border-collapse:collapse">...</table>\\n<!-- /wp:html -->\n   - Кастом HTML (стилизованные блоки, CTA, info-box): <!-- wp:html -->\\n<div style="...">...</div>\\n<!-- /wp:html -->\n   - Изображения: <!-- wp:image -->\\n<figure><img src="..." alt="..."/></figure>\\n<!-- /wp:image -->\n3. НЕ оборачивай всё в <article> или <section>. Каждый блок — отдельный Gutenberg блок.\n4. Inline стили разрешены ТОЛЬКО внутри <!-- wp:html --> блоков. Для <!-- wp:paragraph --> и <!-- wp:heading --> НЕ используй style="".\n5. Между блоками ставь пустую строку.\n6. Таблицы и стилизованные блоки ВСЕГДА через <!-- wp:html -->, чтобы WordPress не ломал разметку.\n7. SEO: один H1 (level:1), остальные по иерархии.\n\nПРИМЕР ФОРМАТА:\n<!-- wp:heading {"level":1} -->\n<h1>Заголовок статьи</h1>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Текст абзаца...</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading {"level":2} -->\n<h2>Подзаголовок</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Ещё текст...</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:html -->\n<table style="width:100%;border-collapse:collapse"><tr><th style="padding:12px;border:1px solid #ddd;background:#f1f5f9">Колонка</th></tr><tr><td style="padding:12px;border:1px solid #ddd">Данные</td></tr></table>\n<!-- /wp:html -->\n\n<!-- wp:paragraph -->\n<p>Текст после таблицы...</p>\n<!-- /wp:paragraph -->\n\nНачинай сразу с <!-- wp:heading`;
   return p;
 }
