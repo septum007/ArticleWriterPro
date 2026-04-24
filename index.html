@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -629,16 +628,20 @@ function addRwLSI(){const i=document.getElementById("rw-lsi-input"),w=i.value.tr
 function parseRwBulkLSI(){const t=document.getElementById("rw-bulk-lsi-text");t.value.split("\n").map(l=>l.trim()).filter(Boolean).forEach(w=>{if(!rwLsiWords.includes(w))rwLsiWords.push(w)});t.value="";document.getElementById("rw-bulk-lsi").classList.add("hidden");renderRwLSI()}
 function renderRwLSI(){const c=document.getElementById("rw-lsi-list");c.innerHTML="";rwLsiWords.forEach((w,i)=>{c.innerHTML+=`<span class="tag" style="background:#1a2a3a;border-color:#2a4a6a">${w}<button onclick="rwLsiWords.splice(${i},1);renderRwLSI()">✕</button></span>`})}
 function renderRwProviders(){
-  const g=document.getElementById("rw-provider-grid");g.innerHTML="";
+  const g=document.getElementById("rw-provider-grid");if(!g)return;g.innerHTML="";
   PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(rwProvider===p.id?" active":"");b.innerHTML=p.n;b.onclick=()=>{rwProvider=p.id;renderRwProviders();updateRwModels()};g.appendChild(b)});
 }
-function updateRwModels(){const s=document.getElementById("rw-model-select");s.innerHTML="";const p=PROVIDERS.find(x=>x.id===rwProvider);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function updateRwModels(){const s=document.getElementById("rw-model-select");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===rwProvider);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
 function initRwSelects(){
-  ["rw-lang","rw-country","rw-currency"].forEach(id=>{const sel=document.getElementById(id);sel.innerHTML=""});
-  const ls=document.getElementById("rw-lang");LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)});ls.value="de";
-  const cs=document.getElementById("rw-country");COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;cs.appendChild(o)});cs.value="Германия";
-  const cu=document.getElementById("rw-currency");CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.s+" "+c.c;cu.appendChild(o)});cu.value="EUR";
-  renderRwProviders();updateRwModels();
+  try{
+    const ls=document.getElementById("rw-lang");if(!ls)return;
+    LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)});ls.value="de";
+    const cs=document.getElementById("rw-country");
+    COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;cs.appendChild(o)});cs.value="Германия";
+    const cu=document.getElementById("rw-currency");
+    CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.s+" "+c.c;cu.appendChild(o)});cu.value="EUR";
+    renderRwProviders();updateRwModels();
+  }catch(e){}
 }
 async function generateRewrite(){
   const overlay=document.getElementById("overlay"),errBox=document.getElementById("rw-error-box");
@@ -686,10 +689,10 @@ async function generateRewrite(){
 // ===== CHAT =====
 let chatMessages=[],chatProvider="gemini";
 function renderChatProviders(){
-  const g=document.getElementById("chat-provider-grid");g.innerHTML="";
+  const g=document.getElementById("chat-provider-grid");if(!g)return;g.innerHTML="";
   PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(chatProvider===p.id?" active":"");b.style.padding="6px";b.style.fontSize="10px";b.innerHTML=p.n;b.onclick=()=>{chatProvider=p.id;renderChatProviders();updateChatModels()};g.appendChild(b)});
 }
-function updateChatModels(){const s=document.getElementById("chat-model-select");s.innerHTML="";const p=PROVIDERS.find(x=>x.id===chatProvider);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function updateChatModels(){const s=document.getElementById("chat-model-select");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===chatProvider);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
 function clearChat(){chatMessages=[];document.getElementById("chat-messages").innerHTML=""}
 function renderChatMessages(){
   const c=document.getElementById("chat-messages");c.innerHTML="";
@@ -734,7 +737,7 @@ async function sendChat(){
   document.getElementById("chat-send-btn").disabled=false;
 }
 
-init();
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
 </script>
 </body>
 </html>
