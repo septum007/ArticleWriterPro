@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -113,7 +114,9 @@ textarea{resize:vertical;line-height:1.5}
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
-    <button class="tab" onclick="switchTab('settings',this)">🔑 API Ключи</button>
+    <button class="tab" onclick="switchTab('rewrite',this)">🔄 Рерайт</button>
+    <button class="tab" onclick="switchTab('chat',this)">💬 Чат</button>
+    <button class="tab" onclick="switchTab('settings',this)">🔑 API</button>
     <button class="tab" id="tab-code" disabled onclick="switchTab('code',this)">⟨/⟩ Код</button>
     <button class="tab" id="tab-preview" disabled onclick="switchTab('preview',this)">👁 Просмотр</button>
     <button class="tab" id="tab-split" disabled onclick="switchTab('split',this)">◫ Код+Просмотр</button>
@@ -178,8 +181,85 @@ textarea{resize:vertical;line-height:1.5}
       </div>
       <div class="sec"><div class="sec-title">🌐 Источник</div><input type="text" id="source" placeholder="https://example.com"></div>
       <div class="sec"><div class="sec-title">📝 Заметки</div><textarea id="notes" rows="3" placeholder="Требования, CTA, запреты..."></textarea></div>
+      <div class="sec"><div class="sec-title">❓ FAQ блок</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:4px">Вопросы и ответы — формат: Вопрос? | Ответ</div>
+        <textarea id="faq-text" rows="4" placeholder="Как зарегистрироваться? | Нажмите кнопку регистрации...&#10;Есть ли бонус? | Да, приветственный бонус 100%..."></textarea>
+        <label style="font-size:10px;color:#64748b;display:flex;align-items:center;gap:4px;margin-top:4px"><input type="checkbox" id="faq-schema" checked> Schema.org FAQPage</label>
+      </div>
       <button class="btn btn-gen" id="gen-btn" onclick="generate()">⚡ Сгенерировать статью</button>
       <div id="error-box" class="error hidden"></div>
+    </div>
+  </div>
+
+  <!-- REWRITE -->
+  <div id="page-rewrite" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="sec"><div class="sec-title">📄 Исходная страница (HTML)</div>
+          <div onclick="document.getElementById('rw-file').click()" style="border:2px dashed #334155;border-radius:8px;padding:10px;text-align:center;cursor:pointer;margin-bottom:6px">
+            <input type="file" id="rw-file" accept=".html,.htm,.txt" style="display:none" onchange="rwLoadFile(this.files[0])">
+            <div style="font-size:11px;color:#64748b">📁 Загрузить HTML или вставить ниже</div>
+          </div>
+          <textarea id="rw-source" rows="10" placeholder="HTML код страницы..." style="font-family:'JetBrains Mono',monospace;font-size:11px"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">📑 Текущая структура</div>
+          <textarea id="rw-old" rows="5" placeholder="H1: Заголовок&#10;H2: Секция 1&#10;H3: Подсекция&#10;H2: Секция 2"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">📑 Новая структура</div>
+          <textarea id="rw-new" rows="5" placeholder="H1: Новый заголовок&#10;H2: Новая секция&#10;H2: Другая секция"></textarea>
+        </div>
+      </div>
+      <div>
+        <div class="sec"><div class="sec-title">🌍 Локализация</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Язык</div><select id="rw-lang"></select></div>
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Страна</div><select id="rw-country"></select></div>
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Валюта</div><select id="rw-currency"></select></div>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">🔑 Ключевые слова</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <input type="text" id="rw-kw-in" placeholder="Ключевое слово..." style="flex:1;min-width:100px" onkeydown="if(event.key==='Enter')rwAddKW()">
+            <input type="number" id="rw-kw-cnt" value="3" min="1" style="width:50px;text-align:center">
+            <button class="btn btn-sm" onclick="rwAddKW()">+</button>
+          </div>
+          <div id="rw-kw-list"></div>
+        </div>
+        <div class="sec"><div class="sec-title">🔗 LSI слова</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input type="text" id="rw-lsi-in" placeholder="LSI..." onkeydown="if(event.key==='Enter')rwAddLSI()">
+            <button class="btn btn-sm" onclick="rwAddLSI()">+</button>
+          </div>
+          <div id="rw-lsi-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
+        <div class="sec"><div class="sec-title">📝 Инструкции</div>
+          <textarea id="rw-notes" rows="3" placeholder="Сохранить CTA, обновить цены..."></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
+          <div class="provider-grid" id="rw-prov"></div>
+          <div style="margin-top:6px"><select id="rw-model"></select></div>
+        </div>
+        <button class="btn btn-gen" onclick="rwGenerate()">🔄 Рерайт + Адаптация</button>
+        <div id="rw-err" class="error hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="page-chat" class="hidden" style="max-width:900px;margin:0 auto">
+    <div class="sec" style="margin-bottom:8px">
+      <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">💬 Свободный чат с AI <button class="btn btn-sm" onclick="chatClear()">🗑 Очистить</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="flex:1;min-width:150px"><div class="provider-grid" id="chat-prov" style="grid-template-columns:repeat(3,1fr)"></div></div>
+        <div style="min-width:150px"><select id="chat-model"></select></div>
+      </div>
+    </div>
+    <div id="chat-msgs" style="max-height:450px;overflow-y:auto;margin-bottom:8px;padding:4px"></div>
+    <div class="sec" style="padding:8px">
+      <div style="display:flex;gap:6px">
+        <textarea id="chat-in" rows="3" placeholder="Напишите сообщение... (Enter = отправить)" style="flex:1;resize:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}"></textarea>
+        <button class="btn" onclick="chatSend()" id="chat-btn" style="align-self:flex-end;padding:12px 20px">➤</button>
+      </div>
     </div>
   </div>
 
@@ -416,7 +496,7 @@ function getFilesPrompt(){
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   if(btn)btn.classList.add("active");
-  ["form","settings","code","preview","split"].forEach(p=>document.getElementById("page-"+p).classList.add("hidden"));
+  ["form","settings","code","preview","split","rewrite","chat"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
   document.getElementById("page-"+id).classList.remove("hidden");
   if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
   if(id==="preview")renderPreview("preview-iframe",generatedCode);
@@ -450,6 +530,16 @@ function buildPrompt(){
   if(src)p+=`\nИСТОЧНИК: ${src}\n`;
   if(notes)p+=`\nТРЕБОВАНИЯ: ${notes}\n`;
   p+=getFilesPrompt();
+  // FAQ
+  const faqEl=document.getElementById("faq-text");
+  if(faqEl&&faqEl.value.trim()){
+    const faqLines=faqEl.value.trim().split("\n").filter(Boolean);
+    p+="\n\nFAQ БЛОК (в конце статьи):\n";
+    faqLines.forEach(line=>{const[q,a]=line.split("|").map(s=>s.trim());if(q)p+=`- В: ${q}${a?" О: "+a:""}\n`});
+    const schEl=document.getElementById("faq-schema");
+    if(schEl&&schEl.checked)p+="Добавь Schema.org FAQPage JSON-LD в <!-- wp:html --> блоке.\n";
+    p+="Оформи FAQ как аккордеон в <!-- wp:html -->.\n";
+  }
   p+=`\nТРЕБОВАНИЯ К HTML — ФОРМАТ WORDPRESS GUTENBERG БЛОКОВ:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html. Без <html>,<head>,<body>,<script>.\n2. КАЖДЫЙ элемент оборачивай в Gutenberg-комментарии:\n   - Заголовки: <!-- wp:heading {"level":2} -->\\n<h2>текст</h2>\\n<!-- /wp:heading -->\n   - Абзацы: <!-- wp:paragraph -->\\n<p>текст</p>\\n<!-- /wp:paragraph -->\n   - Списки: <!-- wp:list -->\\n<ul><li>...</li></ul>\\n<!-- /wp:list -->\n   - Таблицы: <!-- wp:html -->\\n<table style="width:100%;border-collapse:collapse">...</table>\\n<!-- /wp:html -->\n   - Кастом HTML (стилизованные блоки, CTA, info-box): <!-- wp:html -->\\n<div style="...">...</div>\\n<!-- /wp:html -->\n   - Изображения: <!-- wp:image -->\\n<figure><img src="..." alt="..."/></figure>\\n<!-- /wp:image -->\n3. НЕ оборачивай всё в <article> или <section>. Каждый блок — отдельный Gutenberg блок.\n4. Inline стили разрешены ТОЛЬКО внутри <!-- wp:html --> блоков. Для <!-- wp:paragraph --> и <!-- wp:heading --> НЕ используй style="".\n5. Между блоками ставь пустую строку.\n6. Таблицы и стилизованные блоки ВСЕГДА через <!-- wp:html -->, чтобы WordPress не ломал разметку.\n7. SEO: один H1 (level:1), остальные по иерархии.\n\nПРИМЕР ФОРМАТА:\n<!-- wp:heading {"level":1} -->\n<h1>Заголовок статьи</h1>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Текст абзаца...</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading {"level":2} -->\n<h2>Подзаголовок</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Ещё текст...</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:html -->\n<table style="width:100%;border-collapse:collapse"><tr><th style="padding:12px;border:1px solid #ddd;background:#f1f5f9">Колонка</th></tr><tr><td style="padding:12px;border:1px solid #ddd">Данные</td></tr></table>\n<!-- /wp:html -->\n\n<!-- wp:paragraph -->\n<p>Текст после таблицы...</p>\n<!-- /wp:paragraph -->\n\nНачинай сразу с <!-- wp:heading`;
   return p;
 }
@@ -518,7 +608,111 @@ async function generate(){
   }
 }
 
-init();
+// ===== REWRITE =====
+let rwKWs=[],rwLSIs=[],rwProv="gemini";
+function rwLoadFile(f){if(!f)return;const r=new FileReader();r.onload=e=>{document.getElementById("rw-source").value=e.target.result;const m=[...e.target.result.matchAll(/<h([1-6])[^>]*>(.*?)<\/h\1>/gi)];if(m.length)document.getElementById("rw-old").value=m.map(x=>"H"+x[1]+": "+x[2].replace(/<[^>]*>/g,"")).join("\n")};r.readAsText(f)}
+function rwAddKW(){const i=document.getElementById("rw-kw-in"),c=document.getElementById("rw-kw-cnt"),w=i.value.trim();if(!w)return;rwKWs.push({word:w,count:parseInt(c.value)||3});i.value="";rwRenderKW()}
+function rwRenderKW(){const c=document.getElementById("rw-kw-list");c.innerHTML="";rwKWs.forEach((k,i)=>{c.innerHTML+=`<div class="kw-row"><span style="flex:1">${k.word}</span><span style="font-size:9px;color:#64748b">×${k.count}</span><button onclick="rwKWs.splice(${i},1);rwRenderKW()" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`})}
+function rwAddLSI(){const i=document.getElementById("rw-lsi-in"),w=i.value.trim();if(!w)return;rwLSIs.push(w);i.value="";rwRenderLSI()}
+function rwRenderLSI(){const c=document.getElementById("rw-lsi-list");c.innerHTML="";rwLSIs.forEach((w,i)=>{c.innerHTML+=`<span class="tag" style="background:#1a2a3a;border-color:#2a4a6a">${w}<button onclick="rwLSIs.splice(${i},1);rwRenderLSI()">✕</button></span>`})}
+function rwInitProv(){
+  const g=document.getElementById("rw-prov");if(!g)return;g.innerHTML="";
+  PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(rwProv===p.id?" active":"");b.textContent=p.n;b.onclick=()=>{rwProv=p.id;rwInitProv();rwInitModel()};g.appendChild(b)});
+}
+function rwInitModel(){const s=document.getElementById("rw-model");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===rwProv);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function rwInitSelects(){
+  const ls=document.getElementById("rw-lang");if(!ls)return;
+  LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)});ls.value="de";
+  const cs=document.getElementById("rw-country");COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;cs.appendChild(o)});cs.value="Германия";
+  const cu=document.getElementById("rw-currency");CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.s+" "+c.c;cu.appendChild(o)});cu.value="EUR";
+  rwInitProv();rwInitModel();
+}
+async function rwGenerate(){
+  const overlay=document.getElementById("overlay"),err=document.getElementById("rw-err");err.classList.add("hidden");
+  document.getElementById("overlay-title").textContent="Рерайт + Адаптация...";
+  document.getElementById("overlay-sub").textContent="Отправка...";
+  const pn=PROVIDERS.find(x=>x.id===rwProv);
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("rw-model").value||"");
+  overlay.classList.remove("hidden");
+  try{
+    const src=document.getElementById("rw-source").value,oldS=document.getElementById("rw-old").value,newS=document.getElementById("rw-new").value;
+    const lang=LANGS.find(l=>l.c===(document.getElementById("rw-lang").value||"de"));
+    const country=document.getElementById("rw-country").value,cur=document.getElementById("rw-currency").value,notes=document.getElementById("rw-notes").value;
+    let p="Сделай РЕРАЙТ и АДАПТАЦИЮ страницы.\n\n";
+    if(src)p+="ИСХОДНЫЙ HTML:\n"+src.substring(0,15000)+"\n\n";
+    if(oldS)p+="ТЕКУЩАЯ СТРУКТУРА:\n"+oldS+"\n\n";
+    if(newS)p+="НОВАЯ СТРУКТУРА (следуй ей):\n"+newS+"\n\n";
+    p+="АДАПТАЦИЯ: Язык: "+(lang?lang.n:"")+" Страна: "+country+" Валюта: "+cur+"\n";
+    if(rwKWs.length)p+="Ключевые: "+rwKWs.map(k=>k.word+"(×"+k.count+")").join(", ")+"\n";
+    if(rwLSIs.length)p+="LSI: "+rwLSIs.join(", ")+"\n";
+    if(notes)p+="Требования: "+notes+"\n";
+    p+="\nФормат: WordPress Gutenberg блоки. Начинай с <!-- wp:heading";
+    const apiKey=localStorage.getItem("apikey_"+rwProv);
+    if(!apiKey)throw new Error("API ключ для "+rwProv+" не установлен.");
+    const model=document.getElementById("rw-model").value;
+    let html;
+    if(rwProv==="gemini")html=await callGemini(p,apiKey,model);
+    else if(rwProv==="claude")html=await callClaude(p,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};html=await callOpenAICompat(p,apiKey,model,urls[rwProv])}
+    html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+    generatedCode=html;enableOutputTabs();overlay.classList.add("hidden");
+    switchTab("split",null);document.querySelectorAll(".tab").forEach(t=>{if(t.textContent.includes("Код+"))t.classList.add("active")});
+  }catch(e){overlay.classList.add("hidden");err.textContent="⚠ "+e.message;err.classList.remove("hidden")}
+}
+
+// ===== CHAT =====
+let chatMsgs=[],chatProv="gemini";
+function chatInitProv(){
+  const g=document.getElementById("chat-prov");if(!g)return;g.innerHTML="";
+  PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(chatProv===p.id?" active":"");b.style.padding="6px";b.style.fontSize="10px";b.textContent=p.n;b.onclick=()=>{chatProv=p.id;chatInitProv();chatInitModel()};g.appendChild(b)});
+}
+function chatInitModel(){const s=document.getElementById("chat-model");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===chatProv);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function chatClear(){chatMsgs=[];const c=document.getElementById("chat-msgs");if(c)c.innerHTML=""}
+function chatRender(){
+  const c=document.getElementById("chat-msgs");if(!c)return;c.innerHTML="";
+  chatMsgs.forEach(m=>{
+    const u=m.role==="user";
+    c.innerHTML+=`<div style="display:flex;justify-content:${u?"flex-end":"flex-start"};margin-bottom:8px"><div style="max-width:80%;padding:10px 14px;border-radius:${u?"14px 14px 4px 14px":"14px 14px 14px 4px"};background:${u?"#1e3a5f":"#172032"};border:1px solid ${u?"#2563eb33":"#1e293b"};font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word">${m.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div></div>`;
+  });c.scrollTop=c.scrollHeight;
+}
+async function chatSend(){
+  const inp=document.getElementById("chat-in"),msg=inp.value.trim();if(!msg)return;
+  chatMsgs.push({role:"user",content:msg});inp.value="";chatRender();
+  document.getElementById("chat-btn").disabled=true;
+  try{
+    const apiKey=localStorage.getItem("apikey_"+chatProv);
+    if(!apiKey)throw new Error("API ключ для "+chatProv+" не установлен.");
+    const model=document.getElementById("chat-model").value;
+    let reply;
+    if(chatProv==="gemini"){
+      const contents=chatMsgs.map(m=>({role:m.role==="user"?"user":"model",parts:[{text:m.content}]}));
+      const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent?key="+apiKey,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents,generationConfig:{maxOutputTokens:8192}})});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error("Gemini "+r.status+": "+(e?.error?.message||""))}
+      const d=await r.json();reply=d.candidates?.[0]?.content?.parts?.map(p=>p.text).join("")||"Пустой ответ";
+    }else if(chatProv==="claude"){
+      const msgs=chatMsgs.map(m=>({role:m.role,content:m.content}));
+      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},body:JSON.stringify({model,max_tokens:8192,messages:msgs})});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error("Claude "+r.status+": "+(e?.error?.message||""))}
+      const d=await r.json();reply=d.content?.map(b=>b.text||"").join("")||"Пустой ответ";
+    }else{
+      const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};
+      const msgs=chatMsgs.map(m=>({role:m.role,content:m.content}));
+      const r=await fetch(urls[chatProv],{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model,max_tokens:8192,messages:msgs})});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error("API "+r.status+": "+(e?.error?.message||""))}
+      const d=await r.json();reply=d.choices?.[0]?.message?.content||"Пустой ответ";
+    }
+    chatMsgs.push({role:"assistant",content:reply});chatRender();
+  }catch(e){chatMsgs.push({role:"assistant",content:"⚠ "+e.message});chatRender()}
+  document.getElementById("chat-btn").disabled=false;
+}
+
+// ===== START =====
+document.addEventListener("DOMContentLoaded",function(){
+  init();
+  rwInitSelects();
+  chatInitProv();
+  chatInitModel();
+});
 </script>
 </body>
 </html>
