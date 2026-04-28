@@ -267,6 +267,12 @@ textarea{resize:vertical;line-height:1.5}
     <div class="sec"><div class="sec-title">🔑 API Ключи</div>
       <p style="font-size:11px;color:#64748b;margin-bottom:12px">Ключи сохраняются в localStorage вашего браузера. Никуда не передаются кроме API провайдера.</p>
       <div id="api-keys-list"></div>
+      <div style="margin-top:12px;padding:12px;background:#0a1220;border:1px solid #1e293b;border-radius:8px">
+        <div style="font-size:12px;font-weight:600;color:#22d3ee;margin-bottom:6px">🔗 Claude Proxy URL (для работы из браузера)</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:6px">Claude API не работает напрямую из браузера (CORS). Укажите URL вашего Cloudflare Worker прокси.</div>
+        <input type="text" id="proxy-url" placeholder="https://your-worker.your-name.workers.dev" style="margin-bottom:6px">
+        <button class="btn btn-sm" onclick="saveProxy()" style="width:100%;padding:10px">💾 Сохранить Proxy URL</button>
+      </div>
     </div>
   </div>
 
@@ -389,6 +395,8 @@ function renderAPIKeys(){
 }
 function saveKey(id){const v=document.getElementById("key-"+id).value.trim();if(v)localStorage.setItem("apikey_"+id,v);else localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ сохранён!")}
 function deleteKey(id){localStorage.removeItem("apikey_"+id);renderProviders();renderAPIKeys();alert("Ключ удалён")}
+function saveProxy(){const v=document.getElementById("proxy-url").value.trim();if(v)localStorage.setItem("claude_proxy_url",v);else localStorage.removeItem("claude_proxy_url");alert("Proxy URL сохранён!")}
+function loadProxy(){const v=localStorage.getItem("claude_proxy_url");if(v){const el=document.getElementById("proxy-url");if(el)el.value=v}}
 
 // ===== CHAPTERS =====
 function toggleBulkCh(){document.getElementById("ch-bulk").classList.toggle("hidden")}
@@ -556,7 +564,18 @@ async function callGemini(prompt,apiKey,model){
 }
 
 async function callClaude(prompt,apiKey,model){
-  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+  const proxyUrl=localStorage.getItem("claude_proxy_url");
+  let url,headers;
+  if(proxyUrl){
+    // Use proxy — no API key in browser, proxy adds it server-side
+    url=proxyUrl;
+    headers={"Content-Type":"application/json"};
+  }else{
+    // Direct call (works from desktop apps, fails in browser due to CORS)
+    url="https://api.anthropic.com/v1/messages";
+    headers={"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"};
+  }
+  const r=await fetch(url,{method:"POST",headers,
     body:JSON.stringify({model,max_tokens:8192,messages:[{role:"user",content:prompt}]})});
   if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(`Claude ${r.status}: ${e?.error?.message||r.statusText}`)}
   const d=await r.json();return d.content?.map(b=>b.text||"").join("")||"";
@@ -690,7 +709,11 @@ async function chatSend(){
       const d=await r.json();reply=d.candidates?.[0]?.content?.parts?.map(p=>p.text).join("")||"Пустой ответ";
     }else if(chatProv==="claude"){
       const msgs=chatMsgs.map(m=>({role:m.role,content:m.content}));
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},body:JSON.stringify({model,max_tokens:8192,messages:msgs})});
+      const proxyUrl=localStorage.getItem("claude_proxy_url");
+      let chatUrl,chatHeaders;
+      if(proxyUrl){chatUrl=proxyUrl;chatHeaders={"Content-Type":"application/json"}}
+      else{chatUrl="https://api.anthropic.com/v1/messages";chatHeaders={"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"}}
+      const r=await fetch(chatUrl,{method:"POST",headers:chatHeaders,body:JSON.stringify({model,max_tokens:8192,messages:msgs})});
       if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error("Claude "+r.status+": "+(e?.error?.message||""))}
       const d=await r.json();reply=d.content?.map(b=>b.text||"").join("")||"Пустой ответ";
     }else{
@@ -708,6 +731,7 @@ async function chatSend(){
 // ===== START =====
 document.addEventListener("DOMContentLoaded",function(){
   init();
+  loadProxy();
   rwInitSelects();
   chatInitProv();
   chatInitModel();
