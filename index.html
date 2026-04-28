@@ -711,6 +711,7 @@ async function generate(){
     let html=await callAI(prompt);
     html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
     generatedCode=html;enableOutputTabs();
+    addArticleToHistory(document.getElementById("topic").value,selectedProvider,document.getElementById("model-select").value,html);
     overlay.classList.add("hidden");
     switchTab("split",document.querySelector(".tab:last-child"));
   }catch(e){
