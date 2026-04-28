@@ -103,6 +103,22 @@ textarea{resize:vertical;line-height:1.5}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(145deg,#020617,#0a1628,#0f172a);display:flex;align-items:center;justify-content:center;z-index:999">
+  <div style="background:#0f172a;border:1px solid #1e293b;border-radius:20px;padding:40px;text-align:center;max-width:400px;width:90%;box-shadow:0 0 60px rgba(245,158,11,.1)">
+    <div style="width:60px;height:60px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#0f172a;margin:0 auto 16px">A</div>
+    <div style="font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:4px">Article Writer Pro</div>
+    <div style="font-size:12px;color:#22d3ee;margin-bottom:20px">by Septum</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:12px">Введите пароль для доступа</div>
+    <input type="password" id="login-pass" placeholder="Пароль..." style="width:100%;padding:12px;border-radius:8px;border:1px solid #1e293b;background:#0a1220;color:#e2e8f0;font-size:16px;text-align:center;margin-bottom:12px;font-family:inherit" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button onclick="checkLogin()" style="width:100%;padding:14px;border-radius:8px;border:none;background:#f59e0b;color:#0f172a;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">🔓 Войти</button>
+    <div id="login-error" style="color:#ef4444;font-size:12px;margin-top:8px;display:none">Неверный пароль</div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="main-app" style="display:none">
+
 <div class="header">
   <div style="display:flex;align-items:center;gap:8px">
     <div class="logo">A</div>
@@ -264,7 +280,16 @@ textarea{resize:vertical;line-height:1.5}
 
   <!-- SETTINGS -->
   <div id="page-settings" class="hidden" style="max-width:700px;margin:0 auto">
-    <div class="sec"><div class="sec-title">🔑 API Ключи</div>
+    <div id="api-locked" class="sec" style="text-align:center;padding:30px">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:8px">API ключи защищены паролем</div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:16px">Введите пароль администратора</div>
+      <input type="password" id="api-pass" placeholder="Пароль..." style="max-width:300px;padding:10px;text-align:center;margin-bottom:10px;font-size:16px" onkeydown="if(event.key==='Enter')checkApiPass()">
+      <br><button class="btn" onclick="checkApiPass()" style="padding:12px 30px">🔓 Открыть</button>
+      <div id="api-pass-error" style="color:#ef4444;font-size:12px;margin-top:8px;display:none">Неверный пароль</div>
+    </div>
+    <div id="api-unlocked" class="hidden">
+      <div class="sec"><div class="sec-title">🔑 API Ключи</div>
       <p style="font-size:11px;color:#64748b;margin-bottom:12px">Ключи сохраняются в localStorage вашего браузера. Никуда не передаются кроме API провайдера.</p>
       <div id="api-keys-list"></div>
       <div style="margin-top:12px;padding:12px;background:#0a1220;border:1px solid #1e293b;border-radius:8px">
@@ -274,6 +299,7 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn btn-sm" onclick="saveProxy()" style="width:100%;padding:10px">💾 Сохранить Proxy URL</button>
       </div>
     </div>
+    </div><!-- /api-unlocked -->
   </div>
 
   <!-- CODE -->
@@ -309,6 +335,8 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+</div><!-- /main-app -->
+
 <!-- OVERLAY -->
 <div id="overlay" class="overlay hidden">
   <div class="overlay-box">
@@ -321,6 +349,41 @@ textarea{resize:vertical;line-height:1.5}
 </div>
 
 <script>
+// ===== PASSWORD PROTECTION =====
+// ИЗМЕНИТЕ ПАРОЛИ ЗДЕСЬ:
+const APP_PASSWORD = "Septum2026";     // Пароль для входа в приложение
+const API_PASSWORD = "SeptumAPI2026";  // Пароль для доступа к API ключам
+
+function checkLogin(){
+  const pass=document.getElementById("login-pass").value;
+  if(pass===APP_PASSWORD){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("main-app").style.display="block";
+    sessionStorage.setItem("logged_in","1");
+  }else{
+    document.getElementById("login-error").style.display="block";
+    document.getElementById("login-pass").style.borderColor="#ef4444";
+    setTimeout(()=>{document.getElementById("login-error").style.display="none";document.getElementById("login-pass").style.borderColor="#1e293b"},2000);
+  }
+}
+function checkApiPass(){
+  const pass=document.getElementById("api-pass").value;
+  if(pass===API_PASSWORD){
+    document.getElementById("api-locked").style.display="none";
+    document.getElementById("api-unlocked").classList.remove("hidden");
+    sessionStorage.setItem("api_unlocked","1");
+  }else{
+    document.getElementById("api-pass-error").style.display="block";
+    document.getElementById("api-pass").style.borderColor="#ef4444";
+    setTimeout(()=>{document.getElementById("api-pass-error").style.display="none";document.getElementById("api-pass").style.borderColor="#1e293b"},2000);
+  }
+}
+// Auto-login if session active
+if(sessionStorage.getItem("logged_in")==="1"){
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("main-app").style.display="block";
+}
+
 // ===== DATA =====
 const LANGS=[{c:"en",n:"English"},{c:"de",n:"Deutsch"},{c:"fr",n:"Français"},{c:"es",n:"Español"},{c:"it",n:"Italiano"},{c:"pt",n:"Português"},{c:"nl",n:"Nederlands"},{c:"pl",n:"Polski"},{c:"cs",n:"Čeština"},{c:"sk",n:"Slovenčina"},{c:"hu",n:"Magyar"},{c:"ro",n:"Română"},{c:"bg",n:"Български"},{c:"hr",n:"Hrvatski"},{c:"sr",n:"Српски"},{c:"sl",n:"Slovenščina"},{c:"bs",n:"Bosanski"},{c:"mk",n:"Македонски"},{c:"sq",n:"Shqip"},{c:"el",n:"Ελληνικά"},{c:"tr",n:"Türkçe"},{c:"ru",n:"Русский"},{c:"uk",n:"Українська"},{c:"be",n:"Беларуская"},{c:"et",n:"Eesti"},{c:"lv",n:"Latviešu"},{c:"lt",n:"Lietuvių"},{c:"fi",n:"Suomi"},{c:"sv",n:"Svenska"},{c:"da",n:"Dansk"},{c:"nb",n:"Norsk Bokmål"},{c:"nn",n:"Norsk Nynorsk"},{c:"is",n:"Íslenska"},{c:"ga",n:"Gaeilge"},{c:"cy",n:"Cymraeg"},{c:"gd",n:"Gàidhlig"},{c:"mt",n:"Malti"},{c:"lb",n:"Lëtzebuergesch"},{c:"ca",n:"Català"},{c:"gl",n:"Galego"},{c:"eu",n:"Euskara"},{c:"hy",n:"Հայերեն"},{c:"ka",n:"ქართული"},{c:"az",n:"Azərbaycan"},{c:"kk",n:"Қазақша"},{c:"uz",n:"Oʻzbek"},{c:"ja",n:"日本語"},{c:"ko",n:"한국어"},{c:"zh",n:"中文"},{c:"ar",n:"العربية"},{c:"hi",n:"हिन्दी"},{c:"th",n:"ไทย"},{c:"vi",n:"Tiếng Việt"},{c:"ms",n:"Bahasa Melayu"},{c:"id",n:"Bahasa Indonesia"},{c:"tl",n:"Filipino"}];
 const COUNTRIES=["Австрия","Азербайджан","Албания","Андорра","Армения","Беларусь","Бельгия","Болгария","Босния и Герцеговина","Великобритания","Венгрия","Германия","Греция","Грузия","Дания","Ирландия","Исландия","Испания","Италия","Казахстан","Кипр","Косово","Латвия","Литва","Лихтенштейн","Люксембург","Мальта","Молдова","Монако","Нидерланды","Норвегия","Польша","Португалия","Россия","Румыния","Сан-Марино","Северная Македония","Сербия","Словакия","Словения","Турция","Узбекистан","Украина","Финляндия","Франция","Хорватия","Черногория","Чехия","Швейцария","Швеция","Эстония","США","Канада","Австралия","Новая Зеландия","Бразилия","Мексика","Аргентина","Япония","Южная Корея","Китай","Индия","Индонезия","Таиланд","Вьетнам","Филиппины","Малайзия","Сингапур","ОАЭ","Саудовская Аравия","Израиль","ЮАР","Нигерия","Египет","Марокко"];
@@ -505,6 +568,7 @@ function switchTab(id,btn){
   if(btn)btn.classList.add("active");
   ["form","settings","code","preview","split","rewrite","chat"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
   document.getElementById("page-"+id).classList.remove("hidden");
+  if(id==="settings"&&sessionStorage.getItem("api_unlocked")==="1"){document.getElementById("api-locked").style.display="none";document.getElementById("api-unlocked").classList.remove("hidden")}
   if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
   if(id==="preview")renderPreview("preview-iframe",generatedCode);
   if(id==="split"){document.getElementById("split-area").value=generatedCode;updateSplitLines();renderPreview("split-iframe",generatedCode)}
