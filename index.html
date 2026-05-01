@@ -127,7 +127,8 @@ textarea{resize:vertical;line-height:1.5}
       <div style="font-size:9px;color:#64748b">SEO-генератор • AI • WordPress</div>
     </div>
   </div>
-  <div class="tabs">
+  <div style="display:flex;align-items:center;gap:6px">
+    <div class="tabs">
     <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
     <button class="tab" onclick="switchTab('rewrite',this)">🔄 Рерайт</button>
     <button class="tab" onclick="switchTab('chat',this)">💬 Чат</button>
@@ -135,6 +136,8 @@ textarea{resize:vertical;line-height:1.5}
     <button class="tab" id="tab-code" disabled onclick="switchTab('code',this)">⟨/⟩ Код</button>
     <button class="tab" id="tab-preview" disabled onclick="switchTab('preview',this)">👁 Просмотр</button>
     <button class="tab" id="tab-split" disabled onclick="switchTab('split',this)">◫ Код+Просмотр</button>
+  </div>
+  <button onclick="toggleTheme()" id="theme-btn" style="background:none;border:1px solid #334155;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:14px;color:#e2e8f0;flex-shrink:0" title="Тема">🌙</button>
   </div>
 </div>
 
@@ -152,6 +155,15 @@ textarea{resize:vertical;line-height:1.5}
         </div>
       </div>
       <div class="sec"><div class="sec-title">✍️ Стиль</div><div id="styles-list"></div></div>
+      <div class="sec"><div class="sec-title">🎯 Тон текста</div>
+        <select id="tone" style="width:100%">
+          <option value="neutral">Нейтральный — информативный, сбалансированный</option>
+          <option value="formal">Формальный — деловой, профессиональный</option>
+          <option value="casual">Разговорный — дружелюбный, простой</option>
+          <option value="selling">Продающий — агрессивный, CTA, выгоды</option>
+          <option value="expert">Экспертный — аналитический, с данными</option>
+        </select>
+      </div>
       <div class="sec"><div class="sec-title">🔐 Лицензия</div><select id="license"></select></div>
       <div class="sec"><div class="sec-title">🤖 AI Провайдер</div><div class="provider-grid" id="provider-grid"></div>
         <div style="margin-top:6px"><div style="font-size:10px;color:#64748b;margin-bottom:2px">Модель</div><select id="model-select"></select></div>
@@ -197,6 +209,15 @@ textarea{resize:vertical;line-height:1.5}
       </div>
       <div class="sec"><div class="sec-title">🌐 Источник</div><input type="text" id="source" placeholder="https://example.com"></div>
       <div class="sec"><div class="sec-title">📝 Заметки</div><textarea id="notes" rows="3" placeholder="Требования, CTA, запреты..."></textarea></div>
+      <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔘 CTA Кнопки <button class="btn btn-sm" onclick="addCTABtn()" style="font-size:10px">+ Добавить</button></div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:6px">Кнопки ставятся: после первой главы, в центре, после последней главы. Каждая кнопка с уникальным текстом.</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+          <input type="text" id="cta-text" placeholder="Текст кнопки..." style="flex:1;min-width:120px">
+          <input type="text" id="cta-url" placeholder="/visit/" style="width:120px" value="/visit/">
+          <button class="btn btn-sm" onclick="addCTABtn()">+</button>
+        </div>
+        <div id="cta-list"></div>
+      </div>
       <div class="sec"><div class="sec-title">❓ FAQ блок</div>
         <div style="font-size:10px;color:#64748b;margin-bottom:4px">Вопросы и ответы — формат: Вопрос? | Ответ</div>
         <textarea id="faq-text" rows="4" placeholder="Как зарегистрироваться? | Нажмите кнопку регистрации...&#10;Есть ли бонус? | Да, приветственный бонус 100%..."></textarea>
@@ -349,7 +370,26 @@ textarea{resize:vertical;line-height:1.5}
 
   <!-- SPLIT -->
   <div id="page-split" class="hidden">
-    <div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn btn-sm" onclick="copyCode()">📋 Копировать</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="copyCode()">📋 Копировать</button>
+      <button class="btn btn-sm" onclick="generateMeta()" style="background:#22d3ee;color:#0f172a">🏷 Meta title+description</button>
+      <button class="btn btn-sm" onclick="generateAlts()" style="background:#a855f7;color:#fff">🖼 Alt-тексты</button>
+      <button class="btn btn-sm" onclick="runSeoAnalysis()" style="background:#22c55e;color:#0f172a">📊 SEO-анализ</button>
+    </div>
+    <!-- SEO Analysis Panel -->
+    <div id="seo-panel" class="hidden" style="margin-bottom:10px">
+      <div class="sec" style="padding:10px">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">📊 SEO Анализ <button onclick="document.getElementById('seo-panel').classList.add('hidden')" style="background:none;border:none;color:#64748b;cursor:pointer">✕</button></div>
+        <div id="seo-results"></div>
+      </div>
+    </div>
+    <!-- Meta Panel -->
+    <div id="meta-panel" class="hidden" style="margin-bottom:10px">
+      <div class="sec" style="padding:10px">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🏷 Meta Tags <button onclick="document.getElementById('meta-panel').classList.add('hidden')" style="background:none;border:none;color:#64748b;cursor:pointer">✕</button></div>
+        <div id="meta-results" style="font-size:12px"></div>
+      </div>
+    </div>
     <div class="grid">
       <div><div style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:4px;text-transform:uppercase">HTML Код</div>
         <div class="code-wrap"><div class="code-lines" id="split-lines"></div><textarea class="code-area" id="split-area" spellcheck="false" oninput="updateSplitLines();updateSplitPreview()"></textarea></div>
@@ -591,6 +631,23 @@ function getFilesPrompt(){
   }).join("\n\n");
 }
 
+// ===== CTA BUTTONS =====
+let ctaButtons=[];
+function addCTABtn(){
+  const textEl=document.getElementById("cta-text"),urlEl=document.getElementById("cta-url");
+  const text=textEl.value.trim(),url=urlEl.value.trim()||"/visit/";
+  if(!text)return;
+  ctaButtons.push({text,url});
+  textEl.value="";renderCTABtns();
+}
+function removeCTABtn(i){ctaButtons.splice(i,1);renderCTABtns()}
+function renderCTABtns(){
+  const c=document.getElementById("cta-list");c.innerHTML="";
+  ctaButtons.forEach((b,i)=>{
+    c.innerHTML+=`<div class="kw-row" style="gap:6px"><span style="font-size:18px">🔘</span><span style="flex:1;font-size:12px;font-weight:600;color:#f59e0b">${b.text}</span><span style="font-size:10px;color:#64748b">${b.url}</span><button onclick="removeCTABtn(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`;
+  });
+}
+
 // ===== TABS =====
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
@@ -626,7 +683,10 @@ function buildPrompt(){
   if(topic)p+=`ТЕМА: ${topic}\n\n`;
   const licVal=document.getElementById("license").value;
   const licText=licVal==="Не вставлять информацию о лицензии"?"НЕ упоминай лицензию в статье":licVal;
-  p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Лицензия: ${licText}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
+  const toneEl=document.getElementById("tone");
+  const toneMap={neutral:"Нейтральный, информативный",formal:"Формальный, деловой, профессиональный",casual:"Разговорный, дружелюбный, простой язык",selling:"Продающий, агрессивный, с CTA и выгодами",expert:"Экспертный, аналитический, с данными и фактами"};
+  const toneText=toneEl?toneMap[toneEl.value]||"Нейтральный":"Нейтральный";
+  p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Тон текста: ${toneText}\n- Лицензия: ${licText}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
   if(src)p+=`\nИСТОЧНИК: ${src}\n`;
   if(notes)p+=`\nТРЕБОВАНИЯ: ${notes}\n`;
   p+=getFilesPrompt();
@@ -640,7 +700,18 @@ function buildPrompt(){
     if(schEl&&schEl.checked)p+="Добавь Schema.org FAQPage JSON-LD в <!-- wp:html --> блоке.\n";
     p+="Оформи FAQ как аккордеон в <!-- wp:html -->.\n";
   }
-  p+=`\nТРЕБОВАНИЯ К HTML — ФОРМАТ WORDPRESS GUTENBERG БЛОКОВ:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html. Без <html>,<head>,<body>,<script>.\n2. КАЖДЫЙ элемент оборачивай в Gutenberg-комментарии:\n   - Заголовки: <!-- wp:heading {"level":2} -->\\n<h2>текст</h2>\\n<!-- /wp:heading -->\n   - Абзацы: <!-- wp:paragraph -->\\n<p>текст</p>\\n<!-- /wp:paragraph -->\n   - Списки: <!-- wp:list -->\\n<ul><li>...</li></ul>\\n<!-- /wp:list -->\n   - Кастом HTML (стилизованные блоки, CTA, info-box): <!-- wp:html -->\\n<div style="...">...</div>\\n<!-- /wp:html -->\n   - Изображения: <!-- wp:image -->\\n<figure><img src="..." alt="..."/></figure>\\n<!-- /wp:image -->\n3. НЕ оборачивай всё в <article> или <section>. Каждый блок — отдельный Gutenberg блок.\n4. Inline стили разрешены ТОЛЬКО внутри <!-- wp:html --> блоков. Для <!-- wp:paragraph --> и <!-- wp:heading --> НЕ используй style="".\n5. Между блоками ставь пустую строку.\n6. SEO: один H1 (level:1), остальные по иерархии.\n\nТАБЛИЦЫ — ОБЯЗАТЕЛЬНЫЙ ФОРМАТ:\nВсе таблицы оборачивай в <!-- wp:html --> и используй СТРОГО этот формат:\n<figure class="wp-block-table"><table class="has-fixed-layout"><tbody>\\n<tr><td><strong>Заголовок 1</strong></td><td><strong>Заголовок 2</strong></td></tr>\\n<tr><td>Данные</td><td>Данные</td></tr>\\n</tbody></table></figure>\\nНИКОГДА не используй <thead>, <th>. Заголовки таблиц делай через <td><strong>текст</strong></td>.\n\n🚫 СТОП-СЛОВА — ЗАПРЕЩЕНО использовать следующие слова и фразы (ни на каком языке):\nDiscover the ultimate, Welcome to the comprehensive guide, Explore the exciting world, Dive into, Experience the thrill, This section covers, This article provides, This section describes, This subsection provides, This section discusses, This section gives reviews, This section is a guide, This guide will help you, This section is dedicated to, This section introduces, In the following sections, Iterations, Integration, Fine-tuning, Intrinsic, Landscape, Leverage, Lighthouses, Manifestation, Meticulous, Beyond that, Mosaic, Musical Master, Countless, Navigate, Embedded, Nuance, Paradigm, Peak, Prerequisite, Epitome, Rich, Amplify, Remember, Resilience, Echo, Resonate, Seamlessly, Synergy, Synthesize, Symbiosis, Underpin, Subtlety, Fabric, Today's vast digital landscape, First-rate, Transformative, Underlying, Understanding, Unify, Unity, Unlock, Unrivaled, Reveal, Revealing, Unravel, Immerse yourself, Continue to enjoy the thrill, Smooth gameplay, Fast-paced gameplay, Ensuring, Exciting, Thrill, additionally, reinforce, archetypal, expand, at the center of, catalyst, catalyze, catering, heart, certainly, cohesive, cohesion, confluence, conceptualize, comprehensive, crucial, climax, immerse, digital bazaar, double-edged sword, dynamics, encompass, imagine, radiate, embodiment, embody, ensure, essence, evoke, exemplary, extrapolate, facets, facilitating, fusion, groundbreaking, guide, utilize, harmony, holistic, essentially, inherently, illuminate, immanently, impulse, implications, turning point, stimulate, inspire, smoother gameplay, smooth gaming experience, overall, however.\nЕсли нужно выразить похожую мысль — перефразируй другими словами.\n\nНачинай сразу с <!-- wp:heading`;
+  p+=`\nТРЕБОВАНИЯ К HTML — ФОРМАТ WORDPRESS GUTENBERG БЛОКОВ:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html. Без <html>,<head>,<body>,<script>.\n2. КАЖДЫЙ элемент оборачивай в Gutenberg-комментарии:\n   - Заголовки: <!-- wp:heading {"level":2} -->\\n<h2>текст</h2>\\n<!-- /wp:heading -->\n   - Абзацы: <!-- wp:paragraph -->\\n<p>текст</p>\\n<!-- /wp:paragraph -->\n   - Списки: <!-- wp:list -->\\n<ul><li>...</li></ul>\\n<!-- /wp:list -->\n   - Кастом HTML (стилизованные блоки, CTA, info-box): <!-- wp:html -->\\n<div style="...">...</div>\\n<!-- /wp:html -->\n   - Изображения: <!-- wp:image -->\\n<figure><img src="..." alt="..."/></figure>\\n<!-- /wp:image -->\n3. НЕ оборачивай всё в <article> или <section>. Каждый блок — отдельный Gutenberg блок.\n4. Inline стили разрешены ТОЛЬКО внутри <!-- wp:html --> блоков. Для <!-- wp:paragraph --> и <!-- wp:heading --> НЕ используй style="".\n5. Между блоками ставь пустую строку.\n6. SEO: один H1 (level:1), остальные по иерархии.\n\nТАБЛИЦЫ — ОБЯЗАТЕЛЬНЫЙ ФОРМАТ:\nВсе таблицы оборачивай в <!-- wp:html --> и используй СТРОГО этот формат:\n<figure class="wp-block-table"><table class="has-fixed-layout"><tbody>\\n<tr><td><strong>Заголовок 1</strong></td><td><strong>Заголовок 2</strong></td></tr>\\n<tr><td>Данные</td><td>Данные</td></tr>\\n</tbody></table></figure>\\nНИКОГДА не используй <thead>, <th>. Заголовки таблиц делай через <td><strong>текст</strong></td>.\n\n🚫 СТОП-СЛОВА — ЗАПРЕЩЕНО использовать следующие слова и фразы (ни на каком языке):\nDiscover the ultimate, Welcome to the comprehensive guide, Explore the exciting world, Dive into, Experience the thrill, This section covers, This article provides, This section describes, This subsection provides, This section discusses, This section gives reviews, This section is a guide, This guide will help you, This section is dedicated to, This section introduces, In the following sections, Iterations, Integration, Fine-tuning, Intrinsic, Landscape, Leverage, Lighthouses, Manifestation, Meticulous, Beyond that, Mosaic, Musical Master, Countless, Navigate, Embedded, Nuance, Paradigm, Peak, Prerequisite, Epitome, Rich, Amplify, Remember, Resilience, Echo, Resonate, Seamlessly, Synergy, Synthesize, Symbiosis, Underpin, Subtlety, Fabric, Today's vast digital landscape, First-rate, Transformative, Underlying, Understanding, Unify, Unity, Unlock, Unrivaled, Reveal, Revealing, Unravel, Immerse yourself, Continue to enjoy the thrill, Smooth gameplay, Fast-paced gameplay, Ensuring, Exciting, Thrill, additionally, reinforce, archetypal, expand, at the center of, catalyst, catalyze, catering, heart, certainly, cohesive, cohesion, confluence, conceptualize, comprehensive, crucial, climax, immerse, digital bazaar, double-edged sword, dynamics, encompass, imagine, radiate, embodiment, embody, ensure, essence, evoke, exemplary, extrapolate, facets, facilitating, fusion, groundbreaking, guide, utilize, harmony, holistic, essentially, inherently, illuminate, immanently, impulse, implications, turning point, stimulate, inspire, smoother gameplay, smooth gaming experience, overall, however.\nЕсли нужно выразить похожую мысль — перефразируй другими словами.\n\n📏 ТИРЕ: НИКОГДА не используй длинное тире "—" (em dash). Всегда используй только короткое тире "-" (дефис). Это критически важно.\n\n`;
+  // CTA Buttons
+  if(ctaButtons.length){
+    p+=`\n🔘 CTA КНОПКИ (ОБЯЗАТЕЛЬНО вставь в текст):\nВставь кнопки в текст: первую после первой главы, последнюю после последней главы, остальные равномерно распредели по тексту.\nУ каждой кнопки СВОЙ уникальный текст. Используй СТРОГО этот HTML формат:\n\n`;
+    ctaButtons.forEach((b,i)=>{
+      p+=`Кнопка ${i+1}: текст="${b.text}", URL="${b.url}"\nHTML:\n<!-- wp:html -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${b.url}"><strong>${b.text}</strong></a></div>\n<!-- /wp:html -->\n\n`;
+    });
+    if(ctaButtons.length===1)p+=`Вставь эту кнопку в 3 местах: после первой главы, в середине, после последней главы.\n`;
+    else if(ctaButtons.length===2)p+=`Первую кнопку после первой главы, вторую после последней главы.\n`;
+    else p+=`Распредели ${ctaButtons.length} кнопок равномерно по тексту.\n`;
+  }
+  p+=`Начинай сразу с <!-- wp:heading`;
   return p;
 }
 
@@ -875,6 +946,138 @@ function renderArticleHistory(){
   });
 }
 
+// ===== THEME TOGGLE =====
+let isDark=true;
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.style.background=isDark?"linear-gradient(145deg,#020617,#0a1628,#0f172a)":"linear-gradient(145deg,#f8fafc,#e2e8f0,#f1f5f9)";
+  document.body.style.color=isDark?"#cbd5e1":"#1e293b";
+  document.querySelectorAll(".sec").forEach(s=>{s.style.background=isDark?"#0f172a":"#ffffff";s.style.borderColor=isDark?"#1e293b":"#e2e8f0"});
+  document.querySelectorAll(".header").forEach(h=>{h.style.background=isDark?"linear-gradient(135deg,#0f172a,#1e293b)":"linear-gradient(135deg,#f8fafc,#e2e8f0)"});
+  document.querySelectorAll("input,select,textarea").forEach(i=>{i.style.background=isDark?"#0a1220":"#f8fafc";i.style.color=isDark?"#e2e8f0":"#1e293b";i.style.borderColor=isDark?"#1e293b":"#cbd5e1"});
+  document.querySelectorAll(".kw-row").forEach(k=>{k.style.background=isDark?"#080f1a":"#f1f5f9";k.style.borderColor=isDark?"#1e293b":"#e2e8f0"});
+  document.getElementById("theme-btn").textContent=isDark?"🌙":"☀️";
+  localStorage.setItem("theme",isDark?"dark":"light");
+}
+
+// ===== SEO ANALYZER =====
+function runSeoAnalysis(){
+  const code=generatedCode;if(!code){alert("Сначала сгенерируйте статью");return}
+  const text=code.replace(/<[^>]*>/g," ").replace(/<!--[^>]*-->/g,"").replace(/\s+/g," ").trim();
+  const words=text.split(/\s+/).filter(Boolean);
+  const wordCount=words.length;
+  const charCount=text.length;
+  const sentences=text.split(/[.!?]+/).filter(s=>s.trim().length>5);
+  const avgWordsPerSentence=sentences.length?Math.round(wordCount/sentences.length):0;
+  
+  // Headings
+  const h1s=(code.match(/<h1[^>]*>/gi)||[]).length;
+  const h2s=(code.match(/<h2[^>]*>/gi)||[]).length;
+  const h3s=(code.match(/<h3[^>]*>/gi)||[]).length;
+  const h4s=(code.match(/<h4[^>]*>/gi)||[]).length;
+  
+  // Tables, lists, images
+  const tables=(code.match(/<table/gi)||[]).length;
+  const lists=(code.match(/<[uo]l/gi)||[]).length;
+  const imgs=(code.match(/<img/gi)||[]).length;
+  const links=(code.match(/<a\s/gi)||[]).length;
+  
+  // Keyword density
+  const kwDensity=[];
+  keywords.forEach(kw=>{
+    const regex=new RegExp(kw.word.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\$&"),"gi");
+    const count=(text.match(regex)||[]).length;
+    const density=wordCount?(count/wordCount*100).toFixed(2):0;
+    const status=count>=kw.count?"✅":"⚠️";
+    kwDensity.push({word:kw.word,target:kw.count,actual:count,density,status});
+  });
+  
+  // Readability score (simple)
+  let readScore="";
+  if(avgWordsPerSentence<=15)readScore="🟢 Лёгкий";
+  else if(avgWordsPerSentence<=20)readScore="🟡 Средний";
+  else readScore="🔴 Сложный";
+  
+  // SEO score
+  let score=0,maxScore=0;
+  maxScore+=10;if(h1s===1)score+=10;
+  maxScore+=10;if(h2s>=2)score+=10;
+  maxScore+=10;if(wordCount>=500)score+=10;
+  maxScore+=10;if(tables>=1)score+=10;
+  maxScore+=10;if(lists>=1)score+=10;
+  maxScore+=10;if(avgWordsPerSentence<=20)score+=10;
+  keywords.forEach(kw=>{maxScore+=10;const regex=new RegExp(kw.word.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\$&"),"gi");if((text.match(regex)||[]).length>=kw.count)score+=10});
+  const pct=maxScore?Math.round(score/maxScore*100):0;
+  const scoreColor=pct>=80?"#22c55e":pct>=50?"#eab308":"#ef4444";
+  
+  let html=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div style="width:60px;height:60px;border-radius:50%;border:4px solid ${scoreColor};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:${scoreColor}">${pct}</div><div><div style="font-size:14px;font-weight:600;color:#e2e8f0">SEO Score: ${pct}/100</div><div style="font-size:11px;color:#64748b">Readability: ${readScore} (avg ${avgWordsPerSentence} слов/предложение)</div></div></div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:10px">`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#22d3ee">${wordCount}</div><div style="font-size:9px;color:#64748b">Слов</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#f59e0b">${h1s}/${h2s}/${h3s}</div><div style="font-size:9px;color:#64748b">H1/H2/H3</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#a855f7">${tables}</div><div style="font-size:9px;color:#64748b">Таблиц</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#22c55e">${lists}</div><div style="font-size:9px;color:#64748b">Списков</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#3b82f6">${imgs}</div><div style="font-size:9px;color:#64748b">Изображений</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:#ec4899">${links}</div><div style="font-size:9px;color:#64748b">Ссылок</div></div>`;
+  html+=`</div>`;
+  if(kwDensity.length){
+    html+=`<div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:4px">Плотность ключевых слов:</div>`;
+    kwDensity.forEach(k=>{html+=`<div style="display:flex;gap:6px;align-items:center;padding:3px 0;font-size:11px"><span>${k.status}</span><span style="flex:1;color:#cbd5e1">${k.word}</span><span style="color:#64748b">цель:${k.target}</span><span style="color:${k.actual>=k.target?"#22c55e":"#ef4444"};font-weight:600">факт:${k.actual}</span><span style="color:#64748b">(${k.density}%)</span></div>`});
+  }
+  document.getElementById("seo-results").innerHTML=html;
+  document.getElementById("seo-panel").classList.remove("hidden");
+}
+
+// ===== META GENERATOR =====
+async function generateMeta(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const text=generatedCode.replace(/<[^>]*>/g," ").replace(/<!--[^>]*-->/g,"").substring(0,3000);
+  const topic=document.getElementById("topic").value;
+  const lang=LANGS.find(l=>l.c===document.getElementById("lang").value)?.n||"";
+  const prompt=`На основе этого текста создай SEO meta-теги на языке ${lang}:\n\nТема: ${topic}\nТекст: ${text}\n\nОтвет СТРОГО в формате:\nTITLE: (50-60 символов, с главным ключевым словом)\nDESCRIPTION: (150-160 символов, с CTA)\n\nТолько TITLE и DESCRIPTION, без пояснений.`;
+  const panel=document.getElementById("meta-panel");
+  const res=document.getElementById("meta-results");
+  res.innerHTML='<div style="color:#64748b">Генерация meta-тегов...</div>';
+  panel.classList.remove("hidden");
+  try{
+    const apiKey=localStorage.getItem("apikey_"+selectedProvider);
+    if(!apiKey)throw new Error("API ключ не установлен");
+    const model=document.getElementById("model-select").value;
+    let reply;
+    if(selectedProvider==="gemini")reply=await callGemini(prompt,apiKey,model);
+    else if(selectedProvider==="claude")reply=await callClaude(prompt,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};reply=await callOpenAICompat(prompt,apiKey,model,urls[selectedProvider])}
+    const titleMatch=reply.match(/TITLE:\s*(.+)/i);
+    const descMatch=reply.match(/DESCRIPTION:\s*(.+)/i);
+    const title=titleMatch?titleMatch[1].trim():"—";
+    const desc=descMatch?descMatch[1].trim():"—";
+    res.innerHTML=`<div style="margin-bottom:8px"><div style="font-size:10px;color:#22d3ee;margin-bottom:2px">META TITLE (${title.length} символов):</div><input type="text" value="${title.replace(/"/g,'&quot;')}" style="font-weight:600" onclick="this.select()"></div><div style="margin-bottom:8px"><div style="font-size:10px;color:#a855f7;margin-bottom:2px">META DESCRIPTION (${desc.length} символов):</div><textarea rows="2" onclick="this.select()">${desc}</textarea></div><div style="font-size:10px;color:#64748b">Кликните по полю чтобы выделить и скопировать</div>`;
+  }catch(e){res.innerHTML=`<div style="color:#ef4444">⚠ ${e.message}</div>`}
+}
+
+// ===== ALT-TEXT GENERATOR =====
+async function generateAlts(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const imgs=[...generatedCode.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi)];
+  if(!imgs.length){alert("В статье нет изображений (<img> тегов)");return}
+  const topic=document.getElementById("topic").value;
+  const lang=LANGS.find(l=>l.c===document.getElementById("lang").value)?.n||"";
+  const prompt=`Создай SEO alt-тексты для ${imgs.length} изображений на языке ${lang}.\nТема статьи: ${topic}\nURL изображений:\n${imgs.map((m,i)=>(i+1)+". "+m[1]).join("\n")}\n\nДля каждого изображения напиши alt-текст (5-15 слов, с ключевыми словами). Формат:\n1. alt-текст\n2. alt-текст`;
+  const panel=document.getElementById("meta-panel");
+  const res=document.getElementById("meta-results");
+  res.innerHTML='<div style="color:#64748b">Генерация alt-текстов...</div>';
+  panel.classList.remove("hidden");
+  try{
+    const apiKey=localStorage.getItem("apikey_"+selectedProvider);
+    if(!apiKey)throw new Error("API ключ не установлен");
+    const model=document.getElementById("model-select").value;
+    let reply;
+    if(selectedProvider==="gemini")reply=await callGemini(prompt,apiKey,model);
+    else if(selectedProvider==="claude")reply=await callClaude(prompt,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};reply=await callOpenAICompat(prompt,apiKey,model,urls[selectedProvider])}
+    res.innerHTML=`<div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:6px">🖼 Alt-тексты для ${imgs.length} изображений:</div><div style="font-size:12px;white-space:pre-wrap;color:#cbd5e1;line-height:1.8">${reply.replace(/</g,"&lt;")}</div>`;
+  }catch(e){res.innerHTML=`<div style="color:#ef4444">⚠ ${e.message}</div>`}
+}
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded",function(){
   init();
@@ -886,6 +1089,7 @@ document.addEventListener("DOMContentLoaded",function(){
   if(chatAllChats.length){chatCurrentId=chatAllChats[0].id;chatMsgs=chatAllChats[0].msgs||[];chatRenderHistory()}
   else chatNew();
   renderArticleHistory();
+  if(localStorage.getItem("theme")==="light")toggleTheme();
 });
 </script>
 </body>
