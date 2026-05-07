@@ -265,18 +265,31 @@ textarea{resize:vertical;line-height:1.5}
             <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Валюта</div><select id="rw-currency"></select></div>
           </div>
         </div>
-        <div class="sec"><div class="sec-title">🔑 Ключевые слова</div>
+        <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔑 Ключевые слова <button class="btn btn-sm" onclick="document.getElementById('rw-bulk-kw').classList.toggle('hidden')" style="font-size:10px">📋 Списком</button></div>
           <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
             <input type="text" id="rw-kw-in" placeholder="Ключевое слово..." style="flex:1;min-width:100px" onkeydown="if(event.key==='Enter')rwAddKW()">
             <input type="number" id="rw-kw-cnt" value="3" min="1" style="width:50px;text-align:center">
             <button class="btn btn-sm" onclick="rwAddKW()">+</button>
           </div>
+          <div id="rw-bulk-kw" class="hidden">
+            <textarea id="rw-bulk-kw-text" rows="4" placeholder="слово1&#10;слово2&#10;слово3" style="margin-bottom:4px"></textarea>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-sm" onclick="rwParseBulkKW()">Добавить все</button>
+              <span style="font-size:10px;color:#64748b">По умолч:</span>
+              <input type="number" id="rw-bulk-kw-def" value="3" min="1" style="width:50px;text-align:center;padding:4px">
+              <span style="font-size:10px;color:#64748b">раз</span>
+            </div>
+          </div>
           <div id="rw-kw-list"></div>
         </div>
-        <div class="sec"><div class="sec-title">🔗 LSI слова</div>
+        <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔗 LSI слова <button class="btn btn-sm" onclick="document.getElementById('rw-bulk-lsi').classList.toggle('hidden')" style="font-size:10px">📋 Списком</button></div>
           <div style="display:flex;gap:6px;margin-bottom:6px">
             <input type="text" id="rw-lsi-in" placeholder="LSI..." onkeydown="if(event.key==='Enter')rwAddLSI()">
             <button class="btn btn-sm" onclick="rwAddLSI()">+</button>
+          </div>
+          <div id="rw-bulk-lsi" class="hidden">
+            <textarea id="rw-bulk-lsi-text" rows="3" placeholder="lsi слово1&#10;lsi слово2" style="margin-bottom:4px"></textarea>
+            <button class="btn btn-sm" onclick="rwParseBulkLSI()">Добавить все</button>
           </div>
           <div id="rw-lsi-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
         </div>
@@ -840,9 +853,13 @@ async function generate(){
 // ===== REWRITE =====
 let rwKWs=[],rwLSIs=[],rwProv="gemini";
 function rwLoadFile(f){if(!f)return;const r=new FileReader();r.onload=e=>{document.getElementById("rw-source").value=e.target.result;const m=[...e.target.result.matchAll(/<h([1-6])[^>]*>(.*?)<\/h\1>/gi)];if(m.length)document.getElementById("rw-old").value=m.map(x=>"H"+x[1]+": "+x[2].replace(/<[^>]*>/g,"")).join("\n")};r.readAsText(f)}
-function rwAddKW(){const i=document.getElementById("rw-kw-in"),c=document.getElementById("rw-kw-cnt"),w=i.value.trim();if(!w)return;rwKWs.push({word:w,count:parseInt(c.value)||3});i.value="";rwRenderKW()}
-function rwRenderKW(){const c=document.getElementById("rw-kw-list");c.innerHTML="";rwKWs.forEach((k,i)=>{c.innerHTML+=`<div class="kw-row"><span style="flex:1">${k.word}</span><span style="font-size:9px;color:#64748b">×${k.count}</span><button onclick="rwKWs.splice(${i},1);rwRenderKW()" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`})}
-function rwAddLSI(){const i=document.getElementById("rw-lsi-in"),w=i.value.trim();if(!w)return;rwLSIs.push(w);i.value="";rwRenderLSI()}
+function rwAddKW(){const i=document.getElementById("rw-kw-in"),c=document.getElementById("rw-kw-cnt"),w=i.value.trim();if(!w||rwKWs.find(k=>k.word===w))return;rwKWs.push({word:w,count:parseInt(c.value)||3});i.value="";rwRenderKW()}
+function rwParseBulkKW(){const t=document.getElementById("rw-bulk-kw-text"),d=parseInt(document.getElementById("rw-bulk-kw-def").value)||3;t.value.split("\n").map(l=>l.trim()).filter(Boolean).forEach(w=>{if(!rwKWs.find(k=>k.word===w))rwKWs.push({word:w,count:d})});t.value="";document.getElementById("rw-bulk-kw").classList.add("hidden");rwRenderKW()}
+function rwRenderKW(){const c=document.getElementById("rw-kw-list");c.innerHTML="";
+  if(rwKWs.length){c.innerHTML+=`<div style="display:flex;justify-content:space-between;margin:4px 0"><span style="font-size:10px;color:#64748b">${rwKWs.length} слов</span><button onclick="rwKWs=[];rwRenderKW()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:10px">Удалить все</button></div>`}
+  rwKWs.forEach((k,i)=>{c.innerHTML+=`<div class="kw-row"><span style="flex:1;font-size:12px">${k.word}</span><span style="font-size:9px;color:#64748b">раз:</span><input type="number" value="${k.count}" min="1" style="width:45px;text-align:center;padding:3px;font-weight:700;color:#f59e0b;background:#0f172a;border:1px solid #1e293b;border-radius:4px" onchange="rwKWs[${i}].count=parseInt(this.value)||1"><button onclick="rwKWs.splice(${i},1);rwRenderKW()" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`})}
+function rwAddLSI(){const i=document.getElementById("rw-lsi-in"),w=i.value.trim();if(!w||rwLSIs.includes(w))return;rwLSIs.push(w);i.value="";rwRenderLSI()}
+function rwParseBulkLSI(){const t=document.getElementById("rw-bulk-lsi-text");t.value.split("\n").map(l=>l.trim()).filter(Boolean).forEach(w=>{if(!rwLSIs.includes(w))rwLSIs.push(w)});t.value="";document.getElementById("rw-bulk-lsi").classList.add("hidden");rwRenderLSI()}
 function rwRenderLSI(){const c=document.getElementById("rw-lsi-list");c.innerHTML="";rwLSIs.forEach((w,i)=>{c.innerHTML+=`<span class="tag" style="background:#1a2a3a;border-color:#2a4a6a">${w}<button onclick="rwLSIs.splice(${i},1);rwRenderLSI()">✕</button></span>`})}
 function rwInitProv(){
   const g=document.getElementById("rw-prov");if(!g)return;g.innerHTML="";
