@@ -696,6 +696,14 @@ function copyCode(){navigator.clipboard.writeText(generatedCode||document.getEle
 function buildPrompt(){
   const topic=document.getElementById("topic").value, lang=LANGS.find(l=>l.c===document.getElementById("lang").value)?.n, country=document.getElementById("country").value, cur=document.getElementById("currency").value, lic=document.getElementById("license").value, src=document.getElementById("source").value, notes=document.getElementById("notes").value;
   const st=STYLES.find(s=>s.id===selectedStyle)?.n||"";
+  const styleInstructions={
+    brand:`СТИЛЬ НАПИСАНИЯ — ОТ ЛИЦА БРЕНДА (ОБЯЗАТЕЛЬНО):\nПиши от первого лица множественного числа: "мы", "наша платформа", "наша компания", "мы предлагаем", "мы разработали", "у нас вы найдёте", "наши клиенты", "мы гарантируем".\nНИКОГДА не пиши "казино предлагает", "платформа имеет" — ВСЕГДА "мы предлагаем", "у нас есть".\nПримеры:\n- "Мы подготовили для вас лучшие бонусы"\n- "На нашей платформе вы найдёте более 3000 игр"\n- "Мы обеспечиваем безопасность ваших данных"\n- "Наша служба поддержки работает 24/7"`,
+    expert:`СТИЛЬ НАПИСАНИЯ — ОТ ЭКСПЕРТА (ОБЯЗАТЕЛЬНО):\nПиши от первого лица единственного числа как эксперт: "я протестировал", "по моему опыту", "я рекомендую", "на мой взгляд", "в моей практике".\nДобавляй экспертные оценки: "после детального анализа", "исходя из моего опыта".\nПримеры:\n- "Я лично протестировал этот сервис и могу подтвердить"\n- "По моему экспертному мнению, это один из лучших вариантов"\n- "Я рекомендую обратить внимание на следующие бонусы"`,
+    team:`СТИЛЬ НАПИСАНИЯ — ОТ КОМАНДЫ (ОБЯЗАТЕЛЬНО):\nПиши от лица команды: "наша команда протестировала", "мы проверили", "наши эксперты оценили", "мы рекомендуем", "наша редакция".\nПримеры:\n- "Наша команда экспертов провела тщательный анализ"\n- "Мы протестировали все функции и можем подтвердить"\n- "Наши специалисты рекомендуют этот сервис"`,
+    player:`СТИЛЬ НАПИСАНИЯ — ОТ ИГРОКА (ОБЯЗАТЕЛЬНО):\nПиши от первого лица как реальный игрок: "я играл", "мне понравилось", "я выиграл", "мой опыт", "я зарегистрировался", "я попробовал".\nДобавляй личные впечатления и эмоции.\nПримеры:\n- "Когда я впервые зарегистрировался, меня приятно удивил бонус"\n- "Я играю здесь уже полгода и ни разу не пожалел"\n- "Мне особенно понравился выбор слотов"`,
+    third:`СТИЛЬ НАПИСАНИЯ — ОТ ТРЕТЬЕГО ЛИЦА (ОБЯЗАТЕЛЬНО):\nПиши объективно, от третьего лица: "казино предлагает", "платформа обеспечивает", "игроки могут", "пользователям доступны".\nБез "мы", "я", "наш". Нейтральный информативный тон.\nПримеры:\n- "Казино предлагает широкий выбор игр"\n- "Игроки могут воспользоваться приветственным бонусом"\n- "Платформа обеспечивает быстрые выплаты"`
+  };
+  const stylePrompt=styleInstructions[selectedStyle]||styleInstructions.third;
   const kwStr=keywords.length?keywords.map(k=>`- "${k.word}" — ровно ${k.count} раз(а)`).join("\n"):"Не указаны";
   const lsiStr=lsiWords.length?lsiWords.join(", "):"Не указаны";
   let chBlock="";
@@ -710,10 +718,14 @@ function buildPrompt(){
   const toneEl=document.getElementById("tone");
   const toneMap={neutral:"Нейтральный, информативный",formal:"Формальный, деловой, профессиональный",casual:"Разговорный, дружелюбный, простой язык",selling:"Продающий, агрессивный, с CTA и выгодами",expert:"Экспертный, аналитический, с данными и фактами"};
   const toneText=toneEl?toneMap[toneEl.value]||"Нейтральный":"Нейтральный";
-  p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Тон текста: ${toneText}\n- Лицензия: ${licText}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
-  if(src)p+=`\nИСТОЧНИК: ${src}\n`;
+  p+=`ПАРАМЕТРЫ:\n- Язык: ${lang}\n- Страна: ${country}\n- Валюта: ${cur}\n- Стиль: ${st}\n- Тон текста: ${toneText}\n- Лицензия: ${licText}\n\n${stylePrompt}\n\nКЛЮЧЕВЫЕ СЛОВА:\n${kwStr}\n\nLSI: ${lsiStr}\n${chBlock}`;
+  if(src)p+=`\nИСТОЧНИК: ${src}\nВАЖНО: Обязательно используй информацию со страницы-источника. Там могут быть актуальные данные, цены, бонусы, условия которые нужно включить в статью. Придерживайся фактов с этой страницы.\n`;
   if(notes)p+=`\nТРЕБОВАНИЯ: ${notes}\n`;
-  p+=getFilesPrompt();
+  const filesPrompt=getFilesPrompt();
+  if(filesPrompt){
+    p+=filesPrompt;
+    p+=`\nВАЖНО О ЗАГРУЖЕННЫХ ФАЙЛАХ: Внимательно изучи ВСЕ загруженные файлы перед написанием. В них может быть:\n- Более подробная и актуальная информация чем в теме\n- Дублирующая информация - используй наиболее полную версию\n- Конкретные цифры, бонусы, условия, RTP, лимиты - обязательно включи их в статью\n- Структура и формулировки которые нужно учесть\nПриоритет данных: загруженные файлы > источник > общие знания.\n`;
+  }
   // FAQ
   const faqEl=document.getElementById("faq-text");
   if(faqEl&&faqEl.value.trim()){
@@ -984,13 +996,57 @@ function renderArticleHistory(){
 let isDark=true;
 function toggleTheme(){
   isDark=!isDark;
-  document.body.style.background=isDark?"linear-gradient(145deg,#020617,#0a1628,#0f172a)":"linear-gradient(145deg,#f8fafc,#e2e8f0,#f1f5f9)";
-  document.body.style.color=isDark?"#cbd5e1":"#1e293b";
-  document.querySelectorAll(".sec").forEach(s=>{s.style.background=isDark?"#0f172a":"#ffffff";s.style.borderColor=isDark?"#1e293b":"#e2e8f0"});
-  document.querySelectorAll(".header").forEach(h=>{h.style.background=isDark?"linear-gradient(135deg,#0f172a,#1e293b)":"linear-gradient(135deg,#f8fafc,#e2e8f0)"});
-  document.querySelectorAll("input,select,textarea").forEach(i=>{i.style.background=isDark?"#0a1220":"#f8fafc";i.style.color=isDark?"#e2e8f0":"#1e293b";i.style.borderColor=isDark?"#1e293b":"#cbd5e1"});
-  document.querySelectorAll(".kw-row").forEach(k=>{k.style.background=isDark?"#080f1a":"#f1f5f9";k.style.borderColor=isDark?"#1e293b":"#e2e8f0"});
-  document.getElementById("theme-btn").textContent=isDark?"🌙":"☀️";
+  const bg=isDark?"linear-gradient(145deg,#020617,#0a1628,#0f172a)":"linear-gradient(145deg,#f0f4f8,#e2e8f0,#f8fafc)";
+  const txt=isDark?"#cbd5e1":"#1e293b";
+  const secBg=isDark?"#0f172a":"#ffffff";
+  const secBrd=isDark?"#1e293b":"#d1d5db";
+  const inputBg=isDark?"#0a1220":"#f8fafc";
+  const inputTxt=isDark?"#e2e8f0":"#1e293b";
+  const inputBrd=isDark?"#1e293b":"#cbd5e1";
+  const rowBg=isDark?"#080f1a":"#f1f5f9";
+  const headerBg=isDark?"linear-gradient(135deg,#0f172a,#1e293b)":"linear-gradient(135deg,#ffffff,#f1f5f9)";
+  const subTxt=isDark?"#64748b":"#6b7280";
+  const titleTxt=isDark?"#e2e8f0":"#111827";
+  const tagBg=isDark?"#172032":"#e0e7ff";
+  const tagBrd=isDark?"#334155":"#a5b4fc";
+  const codeBg=isDark?"#0a1220":"#f8fafc";
+  const tabBg=isDark?"#0f172a":"#e5e7eb";
+  const tabActive=isDark?"#1e293b":"#ffffff";
+  const tabTxt=isDark?"#64748b":"#4b5563";
+  const provBg=isDark?"#0a1220":"#f3f4f6";
+  const chatUserBg=isDark?"#1e3a5f":"#dbeafe";
+  const chatAiBg=isDark?"#172032":"#f3f4f6";
+  
+  document.body.style.background=bg;document.body.style.color=txt;
+  document.querySelectorAll(".sec").forEach(s=>{s.style.background=secBg;s.style.borderColor=secBrd});
+  document.querySelectorAll(".header").forEach(h=>{h.style.background=headerBg;h.style.borderColor=secBrd});
+  document.querySelectorAll("input,select,textarea").forEach(i=>{i.style.background=inputBg;i.style.color=inputTxt;i.style.borderColor=inputBrd});
+  document.querySelectorAll(".kw-row").forEach(k=>{k.style.background=rowBg;k.style.borderColor=secBrd});
+  document.querySelectorAll(".sec-title").forEach(t=>{t.style.color=titleTxt});
+  document.querySelectorAll(".tag").forEach(t=>{t.style.background=tagBg;t.style.borderColor=tagBrd;t.style.color=inputTxt});
+  document.querySelectorAll(".tab").forEach(t=>{t.style.color=tabTxt});
+  document.querySelectorAll(".tab.active").forEach(t=>{t.style.background=tabActive;t.style.color=titleTxt});
+  document.querySelectorAll(".tabs").forEach(t=>{t.style.background=tabBg});
+  document.querySelectorAll(".provider-btn").forEach(b=>{b.style.background=provBg;b.style.color=inputTxt});
+  document.querySelectorAll(".provider-btn.active").forEach(b=>{b.style.background=isDark?"rgba(245,158,11,.1)":"rgba(245,158,11,.15)"});
+  document.querySelectorAll(".code-area").forEach(a=>{a.style.background=codeBg;a.style.color=inputTxt});
+  document.querySelectorAll(".code-lines").forEach(l=>{l.style.background=isDark?"#080f1a":"#f1f5f9";l.style.color=subTxt;l.style.borderColor=secBrd});
+  document.querySelectorAll(".code-wrap").forEach(w=>{w.style.borderColor=secBrd});
+  document.querySelectorAll(".preview-bar").forEach(b=>{b.style.background=secBg;b.style.borderColor=secBrd});
+  document.querySelectorAll(".radio").forEach(r=>{r.style.color=inputTxt});
+  document.querySelectorAll(".radio-dot").forEach(d=>{d.style.borderColor=isDark?"#475569":"#9ca3af"});
+  document.querySelectorAll(".error").forEach(e=>{e.style.background=isDark?"rgba(239,68,68,.1)":"rgba(239,68,68,.08)"});
+  // All spans and divs with inline color styles
+  document.querySelectorAll("[style*='color:#64748b'],[style*='color: #64748b']").forEach(e=>{e.style.color=subTxt});
+  document.querySelectorAll("[style*='color:#475569'],[style*='color: #475569']").forEach(e=>{e.style.color=subTxt});
+  document.querySelectorAll("[style*='color:#e2e8f0'],[style*='color: #e2e8f0']").forEach(e=>{e.style.color=titleTxt});
+  document.querySelectorAll("[style*='color:#cbd5e1'],[style*='color: #cbd5e1']").forEach(e=>{e.style.color=txt});
+  // Theme button
+  const btn=document.getElementById("theme-btn");
+  if(btn){btn.textContent=isDark?"🌙":"☀️";btn.style.borderColor=secBrd;btn.style.color=inputTxt}
+  // Login screen (if visible)
+  const ls=document.getElementById("login-screen");
+  if(ls)ls.style.background=bg;
   localStorage.setItem("theme",isDark?"dark":"light");
 }
 
