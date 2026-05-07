@@ -210,10 +210,11 @@ textarea{resize:vertical;line-height:1.5}
       <div class="sec"><div class="sec-title">🌐 Источник</div><input type="text" id="source" placeholder="https://example.com"></div>
       <div class="sec"><div class="sec-title">📝 Заметки</div><textarea id="notes" rows="3" placeholder="Требования, CTA, запреты..."></textarea></div>
       <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">🔘 CTA Кнопки <button class="btn btn-sm" onclick="addCTABtn()" style="font-size:10px">+ Добавить</button></div>
-        <div style="font-size:10px;color:#64748b;margin-bottom:6px">Кнопки ставятся: после первой главы, в центре, после последней главы. Каждая кнопка с уникальным текстом.</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:6px">Добавьте кнопки и укажите после какой главы их вставить.</div>
         <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-          <input type="text" id="cta-text" placeholder="Текст кнопки..." style="flex:1;min-width:120px">
-          <input type="text" id="cta-url" placeholder="/visit/" style="width:120px" value="/visit/">
+          <input type="text" id="cta-text" placeholder="Текст кнопки..." style="flex:1;min-width:100px">
+          <input type="text" id="cta-url" placeholder="/visit/" style="width:100px" value="/visit/">
+          <select id="cta-after" style="width:140px"><option value="auto">Авто</option></select>
           <button class="btn btn-sm" onclick="addCTABtn()">+</button>
         </div>
         <div id="cta-list"></div>
@@ -560,6 +561,7 @@ function renderChapters(){
       <button onclick="removeCh(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px">✕</button>
     </div>`;
   });
+  updateCTAChapterSelect();renderCTABtns();
 }
 
 // ===== KEYWORDS =====
@@ -633,18 +635,40 @@ function getFilesPrompt(){
 
 // ===== CTA BUTTONS =====
 let ctaButtons=[];
+function updateCTAChapterSelect(){
+  const sel=document.getElementById("cta-after");if(!sel)return;
+  const val=sel.value;
+  sel.innerHTML='<option value="auto">Авто-расстановка</option>';
+  chapters.forEach((ch,i)=>{
+    sel.innerHTML+=`<option value="${i}">После: ${ch.title.substring(0,30)}${ch.title.length>30?"...":""}</option>`;
+  });
+  sel.value=val||"auto";
+}
 function addCTABtn(){
-  const textEl=document.getElementById("cta-text"),urlEl=document.getElementById("cta-url");
-  const text=textEl.value.trim(),url=urlEl.value.trim()||"/visit/";
+  const textEl=document.getElementById("cta-text"),urlEl=document.getElementById("cta-url"),afterEl=document.getElementById("cta-after");
+  const text=textEl.value.trim(),url=urlEl.value.trim()||"/visit/",after=afterEl?afterEl.value:"auto";
   if(!text)return;
-  ctaButtons.push({text,url});
+  ctaButtons.push({text,url,after});
   textEl.value="";renderCTABtns();
 }
 function removeCTABtn(i){ctaButtons.splice(i,1);renderCTABtns()}
+function updateCTAAfter(i,val){ctaButtons[i].after=val;renderCTABtns()}
 function renderCTABtns(){
   const c=document.getElementById("cta-list");c.innerHTML="";
   ctaButtons.forEach((b,i)=>{
-    c.innerHTML+=`<div class="kw-row" style="gap:6px"><span style="font-size:18px">🔘</span><span style="flex:1;font-size:12px;font-weight:600;color:#f59e0b">${b.text}</span><span style="font-size:10px;color:#64748b">${b.url}</span><button onclick="removeCTABtn(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>`;
+    const chName=b.after==="auto"?"Авто":(chapters[parseInt(b.after)]?"После: "+chapters[parseInt(b.after)].title.substring(0,20):"Авто");
+    // Build chapter options for this button
+    let opts='<option value="auto"'+(b.after==="auto"?" selected":"")+'>Авто</option>';
+    chapters.forEach((ch,ci)=>{
+      opts+=`<option value="${ci}"${b.after==String(ci)?" selected":""}>${(ci+1)}. ${ch.title.substring(0,25)}</option>`;
+    });
+    c.innerHTML+=`<div class="kw-row" style="gap:6px;flex-wrap:wrap">
+      <span style="font-size:16px">🔘</span>
+      <span style="flex:1;min-width:80px;font-size:12px;font-weight:600;color:#f59e0b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.text}</span>
+      <span style="font-size:10px;color:#64748b">${b.url}</span>
+      <select onchange="updateCTAAfter(${i},this.value)" style="width:130px;padding:3px;font-size:10px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:4px">${opts}</select>
+      <button onclick="removeCTABtn(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer">✕</button>
+    </div>`;
   });
 }
 
@@ -703,13 +727,23 @@ function buildPrompt(){
   p+=`\nТРЕБОВАНИЯ К HTML — ФОРМАТ WORDPRESS GUTENBERG БЛОКОВ:\n1. ТОЛЬКО чистый HTML. Первый символ="<". Без \`\`\`html. Без <html>,<head>,<body>,<script>.\n2. КАЖДЫЙ элемент оборачивай в Gutenberg-комментарии:\n   - Заголовки: <!-- wp:heading {"level":2} -->\\n<h2>текст</h2>\\n<!-- /wp:heading -->\n   - Абзацы: <!-- wp:paragraph -->\\n<p>текст</p>\\n<!-- /wp:paragraph -->\n   - Списки: <!-- wp:list -->\\n<ul><li>...</li></ul>\\n<!-- /wp:list -->\n   - Кастом HTML (стилизованные блоки, CTA, info-box): <!-- wp:html -->\\n<div style="...">...</div>\\n<!-- /wp:html -->\n   - Изображения: <!-- wp:image -->\\n<figure><img src="..." alt="..."/></figure>\\n<!-- /wp:image -->\n3. НЕ оборачивай всё в <article> или <section>. Каждый блок — отдельный Gutenberg блок.\n4. Inline стили разрешены ТОЛЬКО внутри <!-- wp:html --> блоков. Для <!-- wp:paragraph --> и <!-- wp:heading --> НЕ используй style="".\n5. Между блоками ставь пустую строку.\n6. SEO: один H1 (level:1), остальные по иерархии.\n\nТАБЛИЦЫ — ОБЯЗАТЕЛЬНЫЙ ФОРМАТ:\nВсе таблицы оборачивай в <!-- wp:html --> и используй СТРОГО этот формат:\n<figure class="wp-block-table"><table class="has-fixed-layout"><tbody>\\n<tr><td><strong>Заголовок 1</strong></td><td><strong>Заголовок 2</strong></td></tr>\\n<tr><td>Данные</td><td>Данные</td></tr>\\n</tbody></table></figure>\\nНИКОГДА не используй <thead>, <th>. Заголовки таблиц делай через <td><strong>текст</strong></td>.\n\n🚫 СТОП-СЛОВА — ЗАПРЕЩЕНО использовать следующие слова и фразы (ни на каком языке):\nDiscover the ultimate, Welcome to the comprehensive guide, Explore the exciting world, Dive into, Experience the thrill, This section covers, This article provides, This section describes, This subsection provides, This section discusses, This section gives reviews, This section is a guide, This guide will help you, This section is dedicated to, This section introduces, In the following sections, Iterations, Integration, Fine-tuning, Intrinsic, Landscape, Leverage, Lighthouses, Manifestation, Meticulous, Beyond that, Mosaic, Musical Master, Countless, Navigate, Embedded, Nuance, Paradigm, Peak, Prerequisite, Epitome, Rich, Amplify, Remember, Resilience, Echo, Resonate, Seamlessly, Synergy, Synthesize, Symbiosis, Underpin, Subtlety, Fabric, Today's vast digital landscape, First-rate, Transformative, Underlying, Understanding, Unify, Unity, Unlock, Unrivaled, Reveal, Revealing, Unravel, Immerse yourself, Continue to enjoy the thrill, Smooth gameplay, Fast-paced gameplay, Ensuring, Exciting, Thrill, additionally, reinforce, archetypal, expand, at the center of, catalyst, catalyze, catering, heart, certainly, cohesive, cohesion, confluence, conceptualize, comprehensive, crucial, climax, immerse, digital bazaar, double-edged sword, dynamics, encompass, imagine, radiate, embodiment, embody, ensure, essence, evoke, exemplary, extrapolate, facets, facilitating, fusion, groundbreaking, guide, utilize, harmony, holistic, essentially, inherently, illuminate, immanently, impulse, implications, turning point, stimulate, inspire, smoother gameplay, smooth gaming experience, overall, however.\nЕсли нужно выразить похожую мысль — перефразируй другими словами.\n\n📏 ТИРЕ: НИКОГДА не используй длинное тире "—" (em dash). Всегда используй только короткое тире "-" (дефис). Это критически важно.\n\n`;
   // CTA Buttons
   if(ctaButtons.length){
-    p+=`\n🔘 CTA КНОПКИ (ОБЯЗАТЕЛЬНО вставь в текст):\nВставь кнопки в текст: первую после первой главы, последнюю после последней главы, остальные равномерно распредели по тексту.\nУ каждой кнопки СВОЙ уникальный текст. Используй СТРОГО этот HTML формат:\n\n`;
-    ctaButtons.forEach((b,i)=>{
-      p+=`Кнопка ${i+1}: текст="${b.text}", URL="${b.url}"\nHTML:\n<!-- wp:html -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${b.url}"><strong>${b.text}</strong></a></div>\n<!-- /wp:html -->\n\n`;
+    p+=`\n🔘 CTA КНОПКИ (ОБЯЗАТЕЛЬНО вставь в текст):\n`;
+    const autoButtons=ctaButtons.filter(b=>b.after==="auto");
+    const placedButtons=ctaButtons.filter(b=>b.after!=="auto");
+    // Placed buttons - specific chapter
+    placedButtons.forEach(b=>{
+      const chIdx=parseInt(b.after);
+      const chTitle=chapters[chIdx]?chapters[chIdx].title:"";
+      p+=`Кнопку "${b.text}" вставь ПОСЛЕ главы "${chTitle}":\n<!-- wp:html -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${b.url}"><strong>${b.text}</strong></a></div>\n<!-- /wp:html -->\n\n`;
     });
-    if(ctaButtons.length===1)p+=`Вставь эту кнопку в 3 местах: после первой главы, в середине, после последней главы.\n`;
-    else if(ctaButtons.length===2)p+=`Первую кнопку после первой главы, вторую после последней главы.\n`;
-    else p+=`Распредели ${ctaButtons.length} кнопок равномерно по тексту.\n`;
+    // Auto buttons - distribute evenly
+    if(autoButtons.length){
+      autoButtons.forEach(b=>{
+        p+=`Кнопку "${b.text}" распредели автоматически по тексту:\n<!-- wp:html -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${b.url}"><strong>${b.text}</strong></a></div>\n<!-- /wp:html -->\n\n`;
+      });
+      if(autoButtons.length===1)p+=`Авто-кнопку вставь в 3 местах: после первой главы, в середине, после последней.\n`;
+      else p+=`Авто-кнопки распредели равномерно по тексту.\n`;
+    }
   }
   p+=`Начинай сразу с <!-- wp:heading`;
   return p;
