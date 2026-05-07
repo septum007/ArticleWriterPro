@@ -470,7 +470,7 @@ const PROVIDERS=[
 
 let keywords=[], lsiWords=[], chapters=[], selectedStyle="third", selectedProvider="gemini", generatedCode="";
 const HEADINGS=["H1","H2","H3","H4","H5","H6"];
-const STRUCTS=[{id:"p",n:"Абзац",sh:"P"},{id:"pp",n:"Абзац+Абзац",sh:"P+P"},{id:"pt",n:"Абзац+Таблица",sh:"P+T"},{id:"ptp",n:"Абз+Табл+Абз",sh:"P+T+P"},{id:"plp",n:"Абз+Список+Абз",sh:"P+L+P"},{id:"ph",n:"Абз+HTML",sh:"P+HTML"},{id:"h",n:"Кастом HTML",sh:"HTML"}];
+const STRUCTS=[{id:"p",n:"Абзац",sh:"P"},{id:"pp",n:"Абзац+Абзац",sh:"P+P"},{id:"pt",n:"Абзац+Таблица",sh:"P+T"},{id:"ptp",n:"Абз+Табл+Абз",sh:"P+T+P"},{id:"plp",n:"Абз+Список+Абз",sh:"P+L+P"},{id:"pl",n:"Абзац+Список",sh:"P+L"},{id:"ph",n:"Абз+HTML+Абз",sh:"P+HTML+P"},{id:"ptptp",n:"Абз+Табл+Абз+Табл+Абз",sh:"P+T+P+T+P"},{id:"ptpl",n:"Абз+Табл+Абз+Список",sh:"P+T+P+L"},{id:"h",n:"Кастом HTML",sh:"HTML"}];
 const HC={H1:"#ef4444",H2:"#f59e0b",H3:"#22c55e",H4:"#3b82f6",H5:"#a855f7",H6:"#64748b"};
 
 // ===== INIT =====
@@ -676,8 +676,8 @@ function buildPrompt(){
   const lsiStr=lsiWords.length?lsiWords.join(", "):"Не указаны";
   let chBlock="";
   if(chapters.length){
-    const sNames={p:"Абзац",pp:"Абзац+Абзац",pt:"Абзац+Таблица",ptp:"Абз+Табл+Абз",plp:"Абз+Список+Абз",ph:"Абз+HTML",h:"Кастом HTML"};
-    chBlock="\nСТРУКТУРА ПО ГЛАВАМ (ОБЯЗАТЕЛЬНО):\n"+chapters.map((ch,i)=>`${i+1}. <${ch.heading}>: "${ch.title}" — структура: ${sNames[ch.structure]||ch.structure}`).join("\n")+"\nСТРОГО следуй структуре и уровню заголовка.\n- P=<p>, P+P=два <p>, P+T=<p>+<table>, P+T+P=<p>+<table>+<p>\n- P+L+P=<p>+<ul>/<ol>+<p>, P+HTML=<p>+стилизованный блок, HTML=только блок\n"
+    const sNames={p:"Абзац",pp:"Абзац+Абзац",pt:"Абзац+Таблица",ptp:"Абз+Табл+Абз",plp:"Абз+Список+Абз",pl:"Абзац+Список",ph:"Абз+HTML+Абз",ptptp:"Абз+Табл+Абз+Табл+Абз",ptpl:"Абз+Табл+Абз+Список",h:"Кастом HTML"};
+    chBlock="\nСТРУКТУРА ПО ГЛАВАМ (ОБЯЗАТЕЛЬНО):\n"+chapters.map((ch,i)=>`${i+1}. <${ch.heading}>: "${ch.title}" — структура: ${sNames[ch.structure]||ch.structure}`).join("\n")+"\nСТРОГО следуй структуре и уровню заголовка.\n- P=<p>, P+P=два <p>, P+T=<p>+<table>, P+T+P=<p>+<table>+<p>\n- P+L+P=<p>+<ul>/<ol>+<p>, P+L=<p>+<ul>/<ol>\n- P+HTML+P=<p>+стилизованный HTML блок+<p>\n- P+T+P+T+P=<p>+<table>+<p>+<table>+<p> (две таблицы)\n- P+T+P+L=<p>+<table>+<p>+<ul>/<ol> (таблица+список)\n- HTML=только кастом HTML блок\n"
   }
   let p=`Ты — senior SEO-копирайтер и WordPress-разработчик. Напиши SEO-статью как ГОТОВЫЙ HTML для WordPress.\n\n`;
   if(topic)p+=`ТЕМА: ${topic}\n\n`;
