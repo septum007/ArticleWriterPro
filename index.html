@@ -484,7 +484,7 @@ const PROVIDERS=[
   {id:"grok",n:"Grok",models:["grok-3","grok-3-fast","grok-3-mini"],url:"https://console.x.ai"},
 ];
 
-let keywords=[], lsiWords=[], chapters=[], selectedStyle="third", selectedProvider="gemini", generatedCode="";
+let keywords=[], lsiWords=[], chapters=[], selectedStyle="third", selectedProvider="gemini", generatedCode="", lastGenProv="", lastGenModel="";
 const HEADINGS=["H1","H2","H3","H4","H5","H6"];
 const STRUCTS=[{id:"p",n:"Абзац",sh:"P"},{id:"pp",n:"Абзац+Абзац",sh:"P+P"},{id:"pt",n:"Абзац+Таблица",sh:"P+T"},{id:"ptp",n:"Абз+Табл+Абз",sh:"P+T+P"},{id:"plp",n:"Абз+Список+Абз",sh:"P+L+P"},{id:"pl",n:"Абзац+Список",sh:"P+L"},{id:"ph",n:"Абз+HTML+Абз",sh:"P+HTML+P"},{id:"ptptp",n:"Абз+Табл+Абз+Табл+Абз",sh:"P+T+P+T+P"},{id:"ptpl",n:"Абз+Табл+Абз+Список",sh:"P+T+P+L"},{id:"h",n:"Кастом HTML",sh:"HTML"}];
 const HC={H1:"#ef4444",H2:"#f59e0b",H3:"#22c55e",H4:"#3b82f6",H5:"#a855f7",H6:"#64748b"};
@@ -843,6 +843,7 @@ async function generate(){
     let html=await callAI(prompt);
     html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
     generatedCode=html;enableOutputTabs();
+    lastGenProv=selectedProvider;lastGenModel=document.getElementById("model-select").value;
     addArticleToHistory(document.getElementById("topic").value,selectedProvider,document.getElementById("model-select").value,html);
     overlay.classList.add("hidden");
     switchTab("split",document.querySelector(".tab:last-child"));
@@ -945,6 +946,7 @@ async function rwGenerate(){
     }
     
     generatedCode=fullHtml;enableOutputTabs();overlay.classList.add("hidden");
+    lastGenProv=rwProv;lastGenModel=document.getElementById("rw-model").value;
     addArticleToHistory("Рерайт",rwProv,document.getElementById("rw-model").value,fullHtml);
     document.getElementById("rw-continue-btn").classList.remove("hidden");
     switchTab("split",null);document.querySelectorAll(".tab").forEach(t=>{if(t.textContent.includes("Код+"))t.classList.add("active")});
@@ -960,14 +962,17 @@ async function rwGenerate(){
 async function rwContinue(){
   if(!generatedCode){alert("Сначала запустите рерайт");return}
   const overlay=document.getElementById("overlay"),err=document.getElementById("rw-err");err.classList.add("hidden");
+  const pn=PROVIDERS.find(x=>x.id===rwProv);
   document.getElementById("overlay-title").textContent="Продолжение рерайта...";
   document.getElementById("overlay-sub").textContent="Анализ и дописывание...";
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("rw-model").value||"");
   overlay.classList.remove("hidden");
   try{
     const last500=generatedCode.slice(-500);
     let p="Ты продолжаешь рерайт статьи. Вот последние 500 символов уже написанного:\n\n"+last500+"\n\n";
     p+="ПРОДОЛЖИ рерайт с того места где остановился. НЕ повторяй уже написанное.\n";
     if(rwLastPromptBase)p+="Контекст задачи:\n"+rwLastPromptBase.substring(0,2000)+"\n";
+    p+="НИКОГДА не используй длинное тире '—', только '-'.\n";
     p+="Формат: WordPress Gutenberg блоки.\nНачинай сразу с <!-- wp:";
     let html=await rwCallAI(p);
     html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
@@ -982,14 +987,15 @@ async function continueGeneration(){
   const overlay=document.getElementById("overlay");
   document.getElementById("overlay-title").textContent="Продолжение...";
   document.getElementById("overlay-sub").textContent="Дописываю статью...";
-  const prov=selectedProvider;
+  // Use the same provider that started the generation, or fall back to current
+  const prov=lastGenProv||selectedProvider;
+  const model=lastGenModel||document.getElementById("model-select").value;
   const pn=PROVIDERS.find(x=>x.id===prov);
-  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("model-select").value||"");
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+model;
   overlay.classList.remove("hidden");
   try{
     const apiKey=localStorage.getItem("apikey_"+prov);
     if(!apiKey)throw new Error("API ключ для "+prov+" не установлен.");
-    const model=document.getElementById("model-select").value;
     const last500=generatedCode.slice(-500);
     let p="Ты продолжаешь написание SEO-статьи. Вот последние 500 символов:\n\n"+last500+"\n\n";
     p+="ПРОДОЛЖИ статью с того места где остановился. НЕ повторяй написанное.\n";
