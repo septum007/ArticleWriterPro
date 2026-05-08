@@ -301,6 +301,7 @@ textarea{resize:vertical;line-height:1.5}
           <div style="margin-top:6px"><select id="rw-model"></select></div>
         </div>
         <button class="btn btn-gen" onclick="rwGenerate()">🔄 Рерайт + Адаптация</button>
+        <button class="btn btn-gen hidden" id="rw-continue-btn" onclick="rwContinue()" style="background:#22d3ee;color:#0f172a;margin-top:6px">▶ Продолжить рерайт</button>
         <div id="rw-err" class="error hidden"></div>
       </div>
     </div>
@@ -389,6 +390,7 @@ textarea{resize:vertical;line-height:1.5}
       <button class="btn btn-sm" onclick="generateMeta()" style="background:#22d3ee;color:#0f172a">🏷 Meta title+description</button>
       <button class="btn btn-sm" onclick="generateAlts()" style="background:#a855f7;color:#fff">🖼 Alt-тексты</button>
       <button class="btn btn-sm" onclick="runSeoAnalysis()" style="background:#22c55e;color:#0f172a">📊 SEO-анализ</button>
+      <button class="btn btn-sm" onclick="continueGeneration()" style="background:#f59e0b;color:#0f172a">▶ Продолжить генерацию</button>
     </div>
     <!-- SEO Analysis Panel -->
     <div id="seo-panel" class="hidden" style="margin-bottom:10px">
@@ -873,37 +875,134 @@ function rwInitSelects(){
   const cu=document.getElementById("rw-currency");CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.s+" "+c.c;cu.appendChild(o)});cu.value="EUR";
   rwInitProv();rwInitModel();
 }
+let rwLastPromptBase="";
+function rwBuildPrompt(){
+  const src=document.getElementById("rw-source").value,oldS=document.getElementById("rw-old").value,newS=document.getElementById("rw-new").value;
+  const lang=LANGS.find(l=>l.c===(document.getElementById("rw-lang").value||"de"));
+  const country=document.getElementById("rw-country").value,cur=document.getElementById("rw-currency").value,notes=document.getElementById("rw-notes").value;
+  let p="Ты - senior SEO-копирайтер. Сделай РЕРАЙТ и АДАПТАЦИЮ страницы.\n\n";
+  if(src)p+="ИСХОДНЫЙ HTML (первые 6000 символов):\n"+src.substring(0,6000)+"\n\n";
+  if(oldS)p+="ТЕКУЩАЯ СТРУКТУРА:\n"+oldS+"\n\n";
+  if(newS)p+="НОВАЯ СТРУКТУРА (следуй ей):\n"+newS+"\n\n";
+  p+="АДАПТАЦИЯ: Язык: "+(lang?lang.n:"")+" Страна: "+country+" Валюта: "+cur+"\n";
+  if(rwKWs.length)p+="Ключевые слова: "+rwKWs.map(k=>`"${k.word}" ${k.count} раз`).join(", ")+"\n";
+  if(rwLSIs.length)p+="LSI: "+rwLSIs.join(", ")+"\n";
+  if(notes)p+="Требования: "+notes+"\n";
+  p+="\nНИКОГДА не используй длинное тире '—', только короткое '-'.\n";
+  p+="\nФормат: WordPress Gutenberg блоки (<!-- wp:heading -->, <!-- wp:paragraph -->, <!-- wp:html -->).\nТаблицы: <figure class='wp-block-table'><table class='has-fixed-layout'><tbody>... без <thead>/<th>, заголовки через <td><strong>.\n";
+  return p;
+}
+
+async function rwCallAI(prompt){
+  const apiKey=localStorage.getItem("apikey_"+rwProv);
+  if(!apiKey)throw new Error("API ключ для "+rwProv+" не установлен.");
+  const model=document.getElementById("rw-model").value;
+  if(rwProv==="gemini")return await callGemini(prompt,apiKey,model);
+  else if(rwProv==="claude")return await callClaude(prompt,apiKey,model);
+  else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};return await callOpenAICompat(prompt,apiKey,model,urls[rwProv])}
+}
+
 async function rwGenerate(){
   const overlay=document.getElementById("overlay"),err=document.getElementById("rw-err");err.classList.add("hidden");
-  document.getElementById("overlay-title").textContent="Рерайт + Адаптация...";
-  document.getElementById("overlay-sub").textContent="Отправка...";
   const pn=PROVIDERS.find(x=>x.id===rwProv);
+  document.getElementById("overlay-title").textContent="Рерайт + Адаптация...";
   document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("rw-model").value||"");
   overlay.classList.remove("hidden");
+  
+  const newS=document.getElementById("rw-new").value.trim();
+  const newChapters=newS?newS.split("\n").map(l=>l.trim()).filter(Boolean):[];
+  
   try{
-    const src=document.getElementById("rw-source").value,oldS=document.getElementById("rw-old").value,newS=document.getElementById("rw-new").value;
-    const lang=LANGS.find(l=>l.c===(document.getElementById("rw-lang").value||"de"));
-    const country=document.getElementById("rw-country").value,cur=document.getElementById("rw-currency").value,notes=document.getElementById("rw-notes").value;
-    let p="Сделай РЕРАЙТ и АДАПТАЦИЮ страницы.\n\n";
-    if(src)p+="ИСХОДНЫЙ HTML:\n"+src.substring(0,15000)+"\n\n";
-    if(oldS)p+="ТЕКУЩАЯ СТРУКТУРА:\n"+oldS+"\n\n";
-    if(newS)p+="НОВАЯ СТРУКТУРА (следуй ей):\n"+newS+"\n\n";
-    p+="АДАПТАЦИЯ: Язык: "+(lang?lang.n:"")+" Страна: "+country+" Валюта: "+cur+"\n";
-    if(rwKWs.length)p+="Ключевые: "+rwKWs.map(k=>k.word+"(×"+k.count+")").join(", ")+"\n";
-    if(rwLSIs.length)p+="LSI: "+rwLSIs.join(", ")+"\n";
-    if(notes)p+="Требования: "+notes+"\n";
-    p+="\nФормат: WordPress Gutenberg блоки. Начинай с <!-- wp:heading";
-    const apiKey=localStorage.getItem("apikey_"+rwProv);
-    if(!apiKey)throw new Error("API ключ для "+rwProv+" не установлен.");
-    const model=document.getElementById("rw-model").value;
-    let html;
-    if(rwProv==="gemini")html=await callGemini(p,apiKey,model);
-    else if(rwProv==="claude")html=await callClaude(p,apiKey,model);
-    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};html=await callOpenAICompat(p,apiKey,model,urls[rwProv])}
+    rwLastPromptBase=rwBuildPrompt();
+    let fullHtml="";
+    
+    if(newChapters.length>3){
+      // Chunked - 2-3 chapters per request
+      const chunkSize=3;
+      for(let i=0;i<newChapters.length;i+=chunkSize){
+        const chunk=newChapters.slice(i,i+chunkSize);
+        const isFirst=i===0;
+        const partNum=Math.floor(i/chunkSize)+1;
+        const totalParts=Math.ceil(newChapters.length/chunkSize);
+        document.getElementById("overlay-sub").textContent=`Часть ${partNum}/${totalParts}: ${chunk[0]||""}...`;
+        
+        let p=rwLastPromptBase;
+        p+=`\nСейчас напиши ТОЛЬКО эти главы:\n${chunk.join("\n")}\n`;
+        if(!isFirst)p+="\nЭто ПРОДОЛЖЕНИЕ. НЕ добавляй H1. Начинай сразу с первой главы этой части.\n";
+        p+="Пиши кратко, 2-3 абзаца на главу.\nНачинай с <!-- wp:heading";
+        
+        let html=await rwCallAI(p);
+        html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+        fullHtml+=(fullHtml?"\n\n":"")+html;
+      }
+    } else {
+      // Short - single request
+      document.getElementById("overlay-sub").textContent="Генерация...";
+      let p=rwLastPromptBase+"Пиши кратко.\nНачинай с <!-- wp:heading";
+      let html=await rwCallAI(p);
+      html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+      fullHtml=html;
+    }
+    
+    generatedCode=fullHtml;enableOutputTabs();overlay.classList.add("hidden");
+    addArticleToHistory("Рерайт",rwProv,document.getElementById("rw-model").value,fullHtml);
+    document.getElementById("rw-continue-btn").classList.remove("hidden");
+    switchTab("split",null);document.querySelectorAll(".tab").forEach(t=>{if(t.textContent.includes("Код+"))t.classList.add("active")});
+  }catch(e){
+    overlay.classList.add("hidden");
+    // If we got partial content, save it
+    if(generatedCode){document.getElementById("rw-continue-btn").classList.remove("hidden")}
+    err.textContent="⚠ "+e.message+(generatedCode?"\n\nЧасть текста сохранена. Нажмите 'Продолжить рерайт' чтобы доделать.":"");
+    err.classList.remove("hidden");
+  }
+}
+
+async function rwContinue(){
+  if(!generatedCode){alert("Сначала запустите рерайт");return}
+  const overlay=document.getElementById("overlay"),err=document.getElementById("rw-err");err.classList.add("hidden");
+  document.getElementById("overlay-title").textContent="Продолжение рерайта...";
+  document.getElementById("overlay-sub").textContent="Анализ и дописывание...";
+  overlay.classList.remove("hidden");
+  try{
+    const last500=generatedCode.slice(-500);
+    let p="Ты продолжаешь рерайт статьи. Вот последние 500 символов уже написанного:\n\n"+last500+"\n\n";
+    p+="ПРОДОЛЖИ рерайт с того места где остановился. НЕ повторяй уже написанное.\n";
+    if(rwLastPromptBase)p+="Контекст задачи:\n"+rwLastPromptBase.substring(0,2000)+"\n";
+    p+="Формат: WordPress Gutenberg блоки.\nНачинай сразу с <!-- wp:";
+    let html=await rwCallAI(p);
     html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
-    generatedCode=html;enableOutputTabs();overlay.classList.add("hidden");addArticleToHistory(document.getElementById("topic").value,selectedProvider,document.getElementById("model-select").value,html);
+    generatedCode+="\n\n"+html;
+    enableOutputTabs();overlay.classList.add("hidden");
     switchTab("split",null);document.querySelectorAll(".tab").forEach(t=>{if(t.textContent.includes("Код+"))t.classList.add("active")});
   }catch(e){overlay.classList.add("hidden");err.textContent="⚠ "+e.message;err.classList.remove("hidden")}
+}
+
+async function continueGeneration(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const overlay=document.getElementById("overlay");
+  document.getElementById("overlay-title").textContent="Продолжение...";
+  document.getElementById("overlay-sub").textContent="Дописываю статью...";
+  const prov=selectedProvider;
+  const pn=PROVIDERS.find(x=>x.id===prov);
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("model-select").value||"");
+  overlay.classList.remove("hidden");
+  try{
+    const apiKey=localStorage.getItem("apikey_"+prov);
+    if(!apiKey)throw new Error("API ключ для "+prov+" не установлен.");
+    const model=document.getElementById("model-select").value;
+    const last500=generatedCode.slice(-500);
+    let p="Ты продолжаешь написание SEO-статьи. Вот последние 500 символов:\n\n"+last500+"\n\n";
+    p+="ПРОДОЛЖИ статью с того места где остановился. НЕ повторяй написанное.\n";
+    p+="Формат: WordPress Gutenberg блоки.\nНИКОГДА не используй длинное тире '—', только '-'.\nНачинай сразу с <!-- wp:";
+    let html;
+    if(prov==="gemini")html=await callGemini(p,apiKey,model);
+    else if(prov==="claude")html=await callClaude(p,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};html=await callOpenAICompat(p,apiKey,model,urls[prov])}
+    html=html.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+    generatedCode+="\n\n"+html;
+    overlay.classList.add("hidden");
+    switchTab("split",null);
+  }catch(e){overlay.classList.add("hidden");alert("⚠ "+e.message)}
 }
 
 // ===== CHAT WITH HISTORY =====
