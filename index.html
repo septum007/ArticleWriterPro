@@ -131,6 +131,7 @@ textarea{resize:vertical;line-height:1.5}
     <div class="tabs">
     <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
     <button class="tab" onclick="switchTab('rewrite',this)">🔄 Рерайт</button>
+    <button class="tab" onclick="switchTab('audit',this)">🔍 SEO Audit</button>
     <button class="tab" onclick="switchTab('chat',this)">💬 Чат</button>
     <button class="tab" onclick="switchTab('settings',this)">🔑 API</button>
     <button class="tab" id="tab-code" disabled onclick="switchTab('code',this)">⟨/⟩ Код</button>
@@ -303,6 +304,72 @@ textarea{resize:vertical;line-height:1.5}
         <button class="btn btn-gen" onclick="rwGenerate()">🔄 Рерайт + Адаптация</button>
         <button class="btn btn-gen hidden" id="rw-continue-btn" onclick="rwContinue()" style="background:#22d3ee;color:#0f172a;margin-top:6px">▶ Продолжить рерайт</button>
         <div id="rw-err" class="error hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO AUDIT -->
+  <div id="page-audit" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="sec"><div class="sec-title">🔍 SEO Audit — Аудит страницы</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px">Введите URL или HTML страницы для SEO-анализа. AI проверит crawlability, technical SEO, on-page оптимизацию, контент и authority signals.</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">URL страницы (опционально)</div>
+          <input type="text" id="audit-url" placeholder="https://example.com/page" style="margin-bottom:8px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Или вставьте HTML страницы</div>
+          <textarea id="audit-html" rows="10" placeholder="Вставьте HTML код страницы или загрузите файл..." style="font-family:'JetBrains Mono',monospace;font-size:11px"></textarea>
+          <div onclick="document.getElementById('audit-file').click()" style="border:2px dashed #334155;border-radius:8px;padding:8px;text-align:center;cursor:pointer;margin-top:6px">
+            <input type="file" id="audit-file" accept=".html,.htm,.txt" style="display:none" onchange="auditLoadFile(this.files[0])">
+            <div style="font-size:11px;color:#64748b">📁 Загрузить HTML файл</div>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">🎯 Целевые ключевые слова</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:4px">По каким запросам страница должна ранжироваться</div>
+          <textarea id="audit-keywords" rows="3" placeholder="главное ключевое слово&#10;дополнительный запрос 1&#10;дополнительный запрос 2"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">🏷 Тип сайта</div>
+          <select id="audit-site-type">
+            <option value="content">Контентный сайт / Блог</option>
+            <option value="ecommerce">E-commerce / Интернет-магазин</option>
+            <option value="saas">SaaS / Сервис</option>
+            <option value="local">Локальный бизнес</option>
+            <option value="casino">iGaming / Casino</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="sec"><div class="sec-title">📋 Зоны аудита (что проверить)</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-crawl" checked> 🕷 Crawlability & Indexation (robots.txt, sitemap, canonical, hreflang)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-tech" checked> ⚡ Technical SEO (скорость, mobile, Core Web Vitals, HTTPS)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-onpage" checked> 📝 On-Page SEO (title, meta, H1-H6, ключевые, alt-тексты)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-content" checked> 📄 Content Quality (длина, структура, E-E-A-T, уникальность)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-schema" checked> 🔖 Schema Markup (структурированные данные)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-links" checked> 🔗 Internal Linking (внутренние ссылки, anchor text)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-auth"> 🏆 Authority Signals (E-E-A-T, авторы, источники)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="audit-competitors"> 🆚 Сравнение с конкурентами</label>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">📝 Дополнительный контекст</div>
+          <textarea id="audit-notes" rows="3" placeholder="Какие проблемы замечены? Что было изменено недавно? Конкретные жалобы..."></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
+          <div class="provider-grid" id="audit-prov"></div>
+          <div style="margin-top:6px"><select id="audit-model"></select></div>
+        </div>
+        <button class="btn btn-gen" onclick="runAudit()">🔍 Запустить SEO Аудит</button>
+        <div id="audit-err" class="error hidden"></div>
+      </div>
+    </div>
+    <!-- Results -->
+    <div id="audit-results-wrap" class="hidden" style="margin-top:12px">
+      <div class="sec">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">
+          📊 Результаты аудита
+          <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="copyAuditResults()">📋 Копировать</button><button class="btn btn-sm" onclick="document.getElementById('audit-results-wrap').classList.add('hidden')">✕</button></div>
+        </div>
+        <div id="audit-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
       </div>
     </div>
   </div>
@@ -691,7 +758,7 @@ function renderCTABtns(){
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   if(btn)btn.classList.add("active");
-  ["form","settings","code","preview","split","rewrite","chat"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
+  ["form","settings","code","preview","split","rewrite","chat","audit"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
   document.getElementById("page-"+id).classList.remove("hidden");
   if(id==="settings"&&sessionStorage.getItem("api_unlocked")==="1"){document.getElementById("api-locked").style.display="none";document.getElementById("api-unlocked").classList.remove("hidden")}
   if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
@@ -772,6 +839,9 @@ function buildPrompt(){
       else p+=`Авто-кнопки распредели равномерно по тексту.\n`;
     }
   }
+  
+  p+=`\n🛡 АНТИ-AI ПРАВИЛА (от iGamingTextLab) — текст НЕ должен выглядеть как генерёнка:\n\n1. ❌ ЗАПРЕЩЕНЫ пустые, шаблонные фразы которые подходят к любой теме:\n   - "This slot combines stunning visuals with rewarding features for an unforgettable experience"\n   - "The game caters to both beginners and experienced players alike"\n   - "This casino provides a seamless experience across desktop and mobile"\n   - "Players can enjoy a wide variety of games"\n   - "Bonuses and free spins add extra value to your gaming experience"\n   Если фразу можно вставить в любую другую статью — НЕ пиши её.\n\n2. ❌ ЗАПРЕЩЕНЫ повторяющиеся конструкции AI:\n   - "From X to Y" (From football to tennis, From classic slots to modern...)\n   - "Whether X or Y" (Whether you prefer free spins or jackpots...)\n   - "It offers / It provides / It features / It is designed to"\n   - "By doing X, you will get Y"\n   - Риторические вопросы: "The result? The outcome? The best part?"\n   - Безличные формулировки: "It is important to note", "It is worth noting", "It seems that"\n   - Псевдо-определения в начале абзацев: "The casino offers a wide collection of slots, each designed to enhance your gaming experience"\n\n3. ❌ ЗАПРЕЩЕНЫ слова-маркеры AI:\n   Геймплей: immersive, rewarding, unforgettable experience, seamless gameplay, smooth user interface, uninterrupted action, fast-paced excitement, action-packed adventure, next-level thrills, ultimate gaming adventure, unparalleled entertainment\n   Платформа: robust platform, state-of-the-art technology, advanced features, cutting-edge design, world-class performance, top-notch security, safe and secure environment, endless entertainment, user-friendly, intuitive design, dedicated support team\n   Бонусы: top-tier bonuses, generous promotions, unbeatable offers, exclusive rewards, lucrative rewards, rewarding opportunities, high-value jackpots, big win potential, wide range of exciting bonuses\n   Ставки: unbeatable odds, competitive lines, comprehensive markets, wide-ranging coverage, all-in-one sportsbook, in-depth coverage, extensive selection\n   Прилагательные: endless, limitless, ultimate, unmatched, unparalleled, exclusive, premium, dynamic, unforgettable, rewarding, cutting-edge, innovative, dedicated, immersive, genuine, vibrant\n   Глаголы: appeals to, allow you to, to feature, magic begins, add an extra layer, enhance your gaming, designed in order to, unlocks, brings extra value, extends benefits to, thrilling, embark, dive in, unleash\n\n4. ❌ ЗАПРЕЩЕНЫ риторические вопросы + CTA-ответы:\n   - "Do you want to know more? Keep reading!"\n   - "Curious about the welcome bonus? Claim it now!"\n   - "Want to double your first deposit? Sign up!"\n\n5. ✅ ПИШИ как человек:\n   - Используй иерархию мыслей — идея развивается, появляются детали важные именно для автора\n   - Создавай ритм: длинные предложения чередуй с короткими\n   - Не каждое предложение должно быть равно по весу — делай акценты\n   - Опускай очевидное, добавляй неожиданные детали\n   - Используй конкретные цифры, факты, имена провайдеров, RTP, % выплат, реальные суммы\n   - НЕ начинай каждый абзац с определения "The casino offers..." / "The platform provides..."\n   - Различай предложения по структуре — не используй один шаблон подряд\n\n6. 🔍 ПРОВЕРЬ ЛОГИКУ:\n   - Не противоречь сам себе в разных абзацах\n   - Не выдумывай факты (галлюцинации) — если не знаешь точных данных, не упоминай их\n   - Не используй устаревшую статистику (только данные за последние 2-3 года или вообще без дат)\n   - Если упоминаешь провайдеров, бонусы, RTP — бери их из загруженных файлов / источника\n\n7. 📝 ПУНКТУАЦИЯ:\n   - НЕ используй длинное тире "—" (em dash) — только короткое "-" (дефис)\n   - Избегай скобок с "забавными отступлениями" и шутками в скобках\n   - Двоеточие или точка вместо длинного тире\n\n`;
+  
   p+=`Начинай сразу с <!-- wp:heading`;
   return p;
 }
@@ -1290,11 +1360,117 @@ async function generateAlts(){
   }catch(e){res.innerHTML=`<div style="color:#ef4444">⚠ ${e.message}</div>`}
 }
 
+// ===== SEO AUDIT =====
+let auditProv="gemini",auditResultsText="";
+function auditInitProv(){
+  const g=document.getElementById("audit-prov");if(!g)return;g.innerHTML="";
+  PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(auditProv===p.id?" active":"");b.textContent=p.n;b.onclick=()=>{auditProv=p.id;auditInitProv();auditInitModel()};g.appendChild(b)});
+}
+function auditInitModel(){const s=document.getElementById("audit-model");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===auditProv);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function auditLoadFile(file){if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById("audit-html").value=e.target.result};r.readAsText(file)}
+
+function buildAuditPrompt(html,url,keywords,siteType,notes,zones){
+  const siteTypes={content:"Контентный сайт / Блог",ecommerce:"E-commerce / Интернет-магазин",saas:"SaaS / Сервис",local:"Локальный бизнес",casino:"iGaming / Casino",other:"Другое"};
+  let p=`Ты — эксперт по SEO. Твоя задача — провести профессиональный SEO-аудит страницы и дать конкретные рекомендации для улучшения органического трафика.\n\n`;
+  p+=`ТИП САЙТА: ${siteTypes[siteType]||siteType}\n`;
+  if(url)p+=`URL СТРАНИЦЫ: ${url}\n`;
+  if(keywords)p+=`ЦЕЛЕВЫЕ КЛЮЧЕВЫЕ СЛОВА:\n${keywords}\n`;
+  if(notes)p+=`КОНТЕКСТ: ${notes}\n`;
+  p+=`\nHTML СТРАНИЦЫ:\n${html.substring(0,15000)}\n\n`;
+  p+=`ЗОНЫ АУДИТА (проверь СТРОГО только эти):\n`;
+  if(zones.crawl)p+=`✓ CRAWLABILITY & INDEXATION — robots.txt, sitemap, canonical, hreflang, noindex, мета-robots\n`;
+  if(zones.tech)p+=`✓ TECHNICAL SEO — скорость загрузки, mobile-friendly, Core Web Vitals, HTTPS, mixed content, responsive design\n`;
+  if(zones.onpage)p+=`✓ ON-PAGE SEO — title tag (50-60 симв), meta description (150-160 симв), H1 (один!), H2-H6 иерархия, ключевые слова в заголовках и первом абзаце, alt-тексты у изображений, anchor text\n`;
+  if(zones.content)p+=`✓ CONTENT QUALITY — длина (мин 500 слов для базовой страницы, 1500+ для статей), уникальность, структура, E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness), читаемость, ответ на поисковое намерение\n`;
+  if(zones.schema)p+=`✓ SCHEMA MARKUP — наличие структурированных данных (Article, Product, Organization, FAQ, BreadcrumbList и др.). ВАЖНО: если не видишь schema в HTML, отметь как "требует проверки в браузере" — schema может быть JS-injected\n`;
+  if(zones.links)p+=`✓ INTERNAL LINKING — количество внутренних ссылок, анкорный текст (не "click here"), глубина клика, breadcrumbs, related posts\n`;
+  if(zones.auth)p+=`✓ AUTHORITY SIGNALS — автор статьи, биография, ссылки на источники, дата публикации, обновления, footer trust signals\n`;
+  if(zones.competitors)p+=`✓ КОНКУРЕНТЫ — анализ топ-10 по ключевым словам, что у них лучше, как догнать\n`;
+  
+  p+=`\n📋 ФОРМАТ ОТВЕТА (СТРОГО):\n\n`;
+  p+=`🎯 ОБЩАЯ ОЦЕНКА: оценка из 100 + краткое резюме (2-3 предложения)\n\n`;
+  p+=`🚨 КРИТИЧНЫЕ ПРОБЛЕМЫ (требуют немедленного исправления):\n[Список проблем с конкретными примерами из HTML]\n\n`;
+  p+=`⚠️ ВАЖНЫЕ ПРОБЛЕМЫ (исправить в ближайшее время):\n[Список с примерами]\n\n`;
+  p+=`💡 РЕКОМЕНДАЦИИ ПО УЛУЧШЕНИЮ:\n[Список приоритизированных действий]\n\n`;
+  p+=`✅ ЧТО СДЕЛАНО ХОРОШО:\n[Что уже работает правильно]\n\n`;
+  p+=`📊 ДЕТАЛЬНЫЙ АНАЛИЗ ПО ЗОНАМ:\n[Для каждой выбранной зоны: статус + находки + конкретные исправления]\n\n`;
+  p+=`📝 ПЛАН ДЕЙСТВИЙ (приоритет: 🔴 высокий, 🟡 средний, 🟢 низкий):\n1. [действие] — [приоритет] — [impact]\n2. ...\n\n`;
+  p+=`Пиши конкретно с примерами кода, не используй общие фразы. Указывай ИМЕННО ЧТО менять и КАК.\n`;
+  p+=`Используй короткое тире "-", НЕ длинное "—".\n`;
+  return p;
+}
+
+async function runAudit(){
+  const url=document.getElementById("audit-url").value.trim();
+  const html=document.getElementById("audit-html").value.trim();
+  const keywords=document.getElementById("audit-keywords").value.trim();
+  const siteType=document.getElementById("audit-site-type").value;
+  const notes=document.getElementById("audit-notes").value.trim();
+  const errBox=document.getElementById("audit-err");
+  errBox.classList.add("hidden");
+  
+  if(!html&&!url){errBox.textContent="⚠ Введите URL или HTML страницы";errBox.classList.remove("hidden");return}
+  
+  let htmlToAudit=html;
+  // If only URL provided, try to fetch it
+  if(!html&&url){
+    try{
+      const r=await fetch(url);
+      htmlToAudit=await r.text();
+      document.getElementById("audit-html").value=htmlToAudit;
+    }catch(e){
+      errBox.textContent="⚠ Не удалось загрузить URL. Вставьте HTML вручную. Браузер может блокировать запросы (CORS).";
+      errBox.classList.remove("hidden");return;
+    }
+  }
+  
+  const zones={
+    crawl:document.getElementById("audit-crawl").checked,
+    tech:document.getElementById("audit-tech").checked,
+    onpage:document.getElementById("audit-onpage").checked,
+    content:document.getElementById("audit-content").checked,
+    schema:document.getElementById("audit-schema").checked,
+    links:document.getElementById("audit-links").checked,
+    auth:document.getElementById("audit-auth").checked,
+    competitors:document.getElementById("audit-competitors").checked
+  };
+  
+  const overlay=document.getElementById("overlay");
+  const pn=PROVIDERS.find(x=>x.id===auditProv);
+  document.getElementById("overlay-title").textContent="SEO Аудит...";
+  document.getElementById("overlay-sub").textContent="Анализ страницы...";
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("audit-model").value||"");
+  overlay.classList.remove("hidden");
+  
+  try{
+    const prompt=buildAuditPrompt(htmlToAudit,url,keywords,siteType,notes,zones);
+    const apiKey=localStorage.getItem("apikey_"+auditProv);
+    if(!apiKey)throw new Error("API ключ для "+auditProv+" не установлен");
+    const model=document.getElementById("audit-model").value;
+    let result;
+    if(auditProv==="gemini")result=await callGemini(prompt,apiKey,model);
+    else if(auditProv==="claude")result=await callClaude(prompt,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};result=await callOpenAICompat(prompt,apiKey,model,urls[auditProv])}
+    auditResultsText=result;
+    document.getElementById("audit-results").textContent=result;
+    document.getElementById("audit-results-wrap").classList.remove("hidden");
+    overlay.classList.add("hidden");
+    document.getElementById("audit-results-wrap").scrollIntoView({behavior:"smooth"});
+  }catch(e){
+    overlay.classList.add("hidden");
+    errBox.textContent="⚠ "+e.message;errBox.classList.remove("hidden");
+  }
+}
+
+function copyAuditResults(){navigator.clipboard.writeText(auditResultsText);alert("Результаты скопированы!")}
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded",function(){
   init();
   loadProxy();
   rwInitSelects();
+  auditInitProv();
+  auditInitModel();
   chatLoadAll();
   chatInitProv();
   chatInitModel();
