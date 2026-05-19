@@ -132,6 +132,7 @@ textarea{resize:vertical;line-height:1.5}
     <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
     <button class="tab" onclick="switchTab('rewrite',this)">🔄 Рерайт</button>
     <button class="tab" onclick="switchTab('audit',this)">🔍 SEO Audit</button>
+    <button class="tab" onclick="switchTab('strategy',this)">📋 Стратегия</button>
     <button class="tab" onclick="switchTab('analytics',this)">📊 Analytics</button>
     <button class="tab" onclick="switchTab('competitors',this)">🆚 Конкуренты</button>
     <button class="tab" onclick="switchTab('chat',this)">💬 Чат</button>
@@ -377,6 +378,77 @@ textarea{resize:vertical;line-height:1.5}
           <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="copyAuditResults()">📋 Копировать</button><button class="btn btn-sm" onclick="document.getElementById('audit-results-wrap').classList.add('hidden')">✕</button></div>
         </div>
         <div id="audit-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT STRATEGY -->
+  <div id="page-strategy" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="sec"><div class="sec-title">📋 Content Strategy — Стратегия контента</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px">AI создаст полную контент-стратегию: pillars, content clusters, buyer journey mapping, content calendar</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип проекта</div>
+          <select id="str-scenario" style="margin-bottom:8px">
+            <option value="new">🆕 Старт с нуля — нет блога, создаём стратегию</option>
+            <option value="audit">🔧 Аудит существующего блога (200+ постов, нет роста)</option>
+            <option value="prioritize">📊 Приоритизация идей (есть список тем, надо выбрать)</option>
+            <option value="cluster">🎯 Content Cluster (топический кластер по теме)</option>
+            <option value="ideas">💡 Генерация идей (нужны новые темы)</option>
+          </select>
+        </div>
+        <div class="sec"><div class="sec-title">🏢 Описание бизнеса</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Что продаёте / тип продукта</div>
+          <input type="text" id="str-product" placeholder="B2B SaaS / E-commerce / Курсы / Услуги..." style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Описание</div>
+          <textarea id="str-business" rows="3" placeholder="Что предлагает компания, основные проблемы клиентов которые решает"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">👥 Целевая аудитория</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Кто покупатель / роль</div>
+          <input type="text" id="str-audience" placeholder="CFO в компаниях 50-500 чел / разработчики backend / HR директора..." style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Их боли и потребности</div>
+          <textarea id="str-pains" rows="3" placeholder="Долгие циклы согласования / ручная работа / сложная отчётность..."></textarea>
+        </div>
+      </div>
+      <div>
+        <div class="sec"><div class="sec-title">📂 Контекст</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Уже существующий контент (если есть)</div>
+          <textarea id="str-existing" rows="3" placeholder="Список текущих статей или направлений&#10;Или: 'Блога нет' / 'Есть 200 случайных постов'"></textarea>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px;margin-top:6px">Список идей для приоритизации / тема для кластера (если scenario)</div>
+          <textarea id="str-ideas" rows="3" placeholder="Если приоритизация: список тем&#10;Если кластер: главная тема (напр. 'employee engagement')&#10;Если идеи: оставь пустым"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">📋 Что включить в стратегию</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-pillars" checked> 🏛 Content Pillars (3-5 основных направлений)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-journey" checked> 🛤 Buyer Journey Mapping (awareness → consideration → decision)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-cluster" checked> 🎯 Hub-and-Spoke Clusters (pillar + spoke articles)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-keywords" checked> 🔍 Keyword Research (по этапам воронки)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-priority" checked> 📊 Prioritization Framework (impact/fit/search/resources)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-calendar"> 📅 Content Calendar (план публикаций на 3 месяца)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-types"> 📚 Content Types Mix (searchable + shareable)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-internal"> 🔗 Internal Linking Strategy</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-distribution"> 📢 Distribution Channels (где публиковать)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-metrics"> 📈 Success Metrics (KPI для контента)</label>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">⚙ Ресурсы</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Команда / частота публикаций</div>
+          <input type="text" id="str-resources" placeholder="1 копирайтер, 2 поста в неделю / Команда из 3, 4 поста в неделю" style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Целевой язык</div>
+          <select id="str-lang"></select>
+        </div>
+        <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
+          <div class="provider-grid" id="str-prov"></div>
+          <div style="margin-top:6px"><select id="str-model"></select></div>
+        </div>
+        <button class="btn btn-gen" onclick="runStrategy()">📋 Создать Контент-Стратегию</button>
+        <div id="str-err" class="error hidden"></div>
+      </div>
+    </div>
+    <div id="str-results-wrap" class="hidden" style="margin-top:12px">
+      <div class="sec">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">📋 Content Strategy <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="copyStrategyResults()">📋 Копировать</button><button class="btn btn-sm" onclick="downloadStrategyMd()" style="background:#22d3ee;color:#0f172a">📥 Скачать .md</button><button class="btn btn-sm" onclick="document.getElementById('str-results-wrap').classList.add('hidden')">✕</button></div></div>
+        <div id="str-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
       </div>
     </div>
   </div>
@@ -908,7 +980,7 @@ function renderCTABtns(){
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   if(btn)btn.classList.add("active");
-  ["form","settings","code","preview","split","rewrite","chat","audit","analytics","competitors"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
+  ["form","settings","code","preview","split","rewrite","chat","audit","analytics","competitors","strategy"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
   document.getElementById("page-"+id).classList.remove("hidden");
   if(id==="settings"&&sessionStorage.getItem("api_unlocked")==="1"){document.getElementById("api-locked").style.display="none";document.getElementById("api-unlocked").classList.remove("hidden")}
   if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
@@ -1632,6 +1704,98 @@ async function runAudit(){
 
 function copyAuditResults(){navigator.clipboard.writeText(auditResultsText);alert("Результаты скопированы!")}
 
+// ===== CONTENT STRATEGY =====
+let strProv="gemini",strResultsText="";
+function strInitProv(){
+  const g=document.getElementById("str-prov");if(!g)return;g.innerHTML="";
+  PROVIDERS.forEach(p=>{const b=document.createElement("button");b.className="provider-btn"+(strProv===p.id?" active":"");b.textContent=p.n;b.onclick=()=>{strProv=p.id;strInitProv();strInitModel()};g.appendChild(b)});
+}
+function strInitModel(){const s=document.getElementById("str-model");if(!s)return;s.innerHTML="";const p=PROVIDERS.find(x=>x.id===strProv);if(p)p.models.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;s.appendChild(o)})}
+function strInitSelects(){
+  const ls=document.getElementById("str-lang");if(!ls)return;
+  LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)});ls.value="en";
+  strInitProv();strInitModel();
+}
+
+async function runStrategy(){
+  const errBox=document.getElementById("str-err");errBox.classList.add("hidden");
+  const scenario=document.getElementById("str-scenario").value;
+  const product=document.getElementById("str-product").value;
+  const business=document.getElementById("str-business").value;
+  const audience=document.getElementById("str-audience").value;
+  const pains=document.getElementById("str-pains").value;
+  const existing=document.getElementById("str-existing").value;
+  const ideas=document.getElementById("str-ideas").value;
+  const resources=document.getElementById("str-resources").value;
+  const lang=LANGS.find(l=>l.c===document.getElementById("str-lang").value)?.n||"English";
+  
+  if(!product||!business||!audience){errBox.textContent="⚠ Заполните: продукт, описание бизнеса и аудиторию";errBox.classList.remove("hidden");return}
+  
+  const scenarios={
+    new:"СТАРТ С НУЛЯ — компания только начинает контент-маркетинг, блога нет. Создай полную стратегию с нуля.",
+    audit:"АУДИТ существующего блога — 200+ постов, трафик не растёт. Контент 'случайный', без стратегии. Нужно: проанализировать что есть, найти hub-and-spoke возможности, дать решения update/consolidate/retire.",
+    prioritize:"ПРИОРИТИЗАЦИЯ идей — есть список тем, ограниченные ресурсы. Применить scoring framework (impact 40% / market-fit 30% / search 20% / resources 10%).",
+    cluster:"CONTENT CLUSTER (Hub-and-Spoke) — создать топический кластер по одной теме. Pillar page (3000+ слов) + 8-15 spoke articles. Internal linking структура.",
+    ideas:"ГЕНЕРАЦИЯ ИДЕЙ — создать список тем для контента. Использовать sources: keyword data, community forums (Reddit/Stack Overflow), competitor gaps, customer questions."
+  };
+  
+  let p=`Ты — эксперт по B2B content marketing и SEO. Создай детальную контент-стратегию.\n\n`;
+  p+=`СЦЕНАРИЙ: ${scenarios[scenario]}\n\n`;
+  p+=`ПРОДУКТ: ${product}\n`;
+  p+=`БИЗНЕС: ${business}\n`;
+  p+=`АУДИТОРИЯ: ${audience}\n`;
+  if(pains)p+=`БОЛИ КЛИЕНТОВ: ${pains}\n`;
+  if(existing)p+=`СУЩЕСТВУЮЩИЙ КОНТЕНТ: ${existing}\n`;
+  if(ideas){
+    if(scenario==="prioritize")p+=`СПИСОК ИДЕЙ ДЛЯ ПРИОРИТИЗАЦИИ:\n${ideas}\n`;
+    else if(scenario==="cluster")p+=`ТЕМА ДЛЯ КЛАСТЕРА: ${ideas}\n`;
+    else p+=`ДОПОЛНИТЕЛЬНО: ${ideas}\n`;
+  }
+  if(resources)p+=`РЕСУРСЫ: ${resources}\n`;
+  p+=`ЯЗЫК: ${lang}\n\n`;
+  
+  p+=`СОЗДАЙ СТРАТЕГИЮ ВКЛЮЧИВ:\n`;
+  if(document.getElementById("str-pillars").checked)p+=`1. 🏛 CONTENT PILLARS (3-5 основных направлений) — каждое: название, описание, почему важно, типы контента\n`;
+  if(document.getElementById("str-journey").checked)p+=`2. 🛤 BUYER JOURNEY — типы контента по этапам:\n   - Awareness (TOFU) — проблема-ориентированный контент\n   - Consideration (MOFU) — решение-ориентированный\n   - Decision (BOFU) — продукт-ориентированный\n   - Implementation — onboarding/success\n   Для каждого этапа: типы контента, форматы, темы, CTA\n`;
+  if(document.getElementById("str-cluster").checked)p+=`3. 🎯 HUB-AND-SPOKE CLUSTERS — для каждого pillar:\n   - Pillar page тема (3000+ слов, comprehensive guide)\n   - 8-15 spoke articles с long-tail keywords\n   - Internal linking структура (как связаны hub и spokes)\n`;
+  if(document.getElementById("str-keywords").checked)p+=`4. 🔍 KEYWORD RESEARCH по этапам воронки:\n   - Awareness keywords (informational, "what is", "how to")\n   - Consideration keywords (comparison, "best", "alternatives")\n   - Decision keywords (commercial, "[product] review", "[product] pricing")\n   - Для каждого: примеры реальных запросов\n`;
+  if(document.getElementById("str-priority").checked)p+=`5. 📊 PRIORITIZATION FRAMEWORK с весами:\n   - Customer Impact (40%) — насколько влияет на customer journey\n   - Content-Market Fit (30%) — соответствует ли аудитории\n   - Search Potential (20%) — SEO opportunity\n   - Resources Required (10%) — сколько усилий нужно\n   Скоринг для каждой темы с обоснованием и финальным ranking\n`;
+  if(document.getElementById("str-calendar").checked)p+=`6. 📅 CONTENT CALENDAR на 3 месяца — таблица: неделя | тема | формат | приоритет | этап воронки | целевые keywords\n`;
+  if(document.getElementById("str-types").checked)p+=`7. 📚 CONTENT TYPES MIX:\n   - Searchable (SEO-driven) — guides, how-tos, comparisons, listicles\n   - Shareable (thought leadership) — original research, data reports, expert opinions, controversial takes\n   - Соотношение по бизнес-целям\n`;
+  if(document.getElementById("str-internal").checked)p+=`8. 🔗 INTERNAL LINKING STRATEGY:\n   - Hub-to-spoke связи\n   - Topical clusters\n   - Anchor text best practices\n   - URL structure\n`;
+  if(document.getElementById("str-distribution").checked)p+=`9. 📢 DISTRIBUTION CHANNELS — где публиковать:\n   - Owned (блог, email list, social)\n   - Earned (PR, guest posts, communities)\n   - Paid (ads, sponsorships)\n   - Specific platforms для данной аудитории\n`;
+  if(document.getElementById("str-metrics").checked)p+=`10. 📈 SUCCESS METRICS:\n    - Traffic metrics (organic sessions, pageviews)\n    - Engagement (time on page, scroll depth, social shares)\n    - Conversion (leads, signups, demos)\n    - SEO (rankings, backlinks, domain authority)\n    - Каждой метрике: что измеряет, как часто, целевые значения\n`;
+  
+  p+=`\nФОРМАТ ОТВЕТА:\n- Используй markdown с заголовками (#, ##, ###)\n- Таблицы где уместно\n- Конкретные примеры из ниши клиента\n- Actionable шаги, не размытые рекомендации\n- Используй короткое тире "-", НЕ длинное "—"\n- Структурируй по разделам с emoji заголовками`;
+  
+  const overlay=document.getElementById("overlay");
+  const pn=PROVIDERS.find(x=>x.id===strProv);
+  document.getElementById("overlay-title").textContent="Content Strategy...";
+  document.getElementById("overlay-sub").textContent="Создание стратегии...";
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+(document.getElementById("str-model").value||"");
+  overlay.classList.remove("hidden");
+  
+  try{
+    const apiKey=localStorage.getItem("apikey_"+strProv);
+    if(!apiKey)throw new Error("API ключ для "+strProv+" не установлен");
+    const model=document.getElementById("str-model").value;
+    let result;
+    if(strProv==="gemini")result=await callGemini(p,apiKey,model);
+    else if(strProv==="claude")result=await callClaude(p,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};result=await callOpenAICompat(p,apiKey,model,urls[strProv])}
+    strResultsText=result;
+    document.getElementById("str-results").textContent=result;
+    document.getElementById("str-results-wrap").classList.remove("hidden");
+    overlay.classList.add("hidden");
+    document.getElementById("str-results-wrap").scrollIntoView({behavior:"smooth"});
+  }catch(e){overlay.classList.add("hidden");errBox.textContent="⚠ "+e.message;errBox.classList.remove("hidden")}
+}
+function copyStrategyResults(){navigator.clipboard.writeText(strResultsText);alert("Скопировано!")}
+function downloadStrategyMd(){
+  const blob=new Blob([strResultsText],{type:"text/markdown"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="content-strategy-"+new Date().toISOString().split("T")[0]+".md";a.click();
+}
+
 // ===== ANALYTICS SETUP =====
 let anaProv="gemini",anaResultsText="";
 function anaInitProv(){
@@ -1812,6 +1976,7 @@ document.addEventListener("DOMContentLoaded",function(){
   rwInitSelects();
   auditInitProv();
   auditInitModel();
+  strInitSelects();
   anaInitProv();
   anaInitModel();
   cmpInitSelects();
