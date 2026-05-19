@@ -386,62 +386,88 @@ textarea{resize:vertical;line-height:1.5}
   <div id="page-strategy" class="hidden">
     <div class="grid">
       <div>
-        <div class="sec"><div class="sec-title">📋 Content Strategy — Стратегия контента</div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:8px">AI создаст полную контент-стратегию: pillars, content clusters, buyer journey mapping, content calendar</div>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип проекта</div>
+        <div class="sec"><div class="sec-title">📋 iGaming Content Strategy</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px">Стратегия для аффилейт-сайтов казино: страницы обзоров, гео-адаптация, структура контента под рынок</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип задачи</div>
           <select id="str-scenario" style="margin-bottom:8px">
-            <option value="new">🆕 Старт с нуля — нет блога, создаём стратегию</option>
-            <option value="audit">🔧 Аудит существующего блога (200+ постов, нет роста)</option>
-            <option value="prioritize">📊 Приоритизация идей (есть список тем, надо выбрать)</option>
-            <option value="cluster">🎯 Content Cluster (топический кластер по теме)</option>
-            <option value="ideas">💡 Генерация идей (нужны новые темы)</option>
+            <option value="single-casino">🎰 Стратегия для обзора одного казино</option>
+            <option value="single-slot">🎮 Стратегия для обзора слота</option>
+            <option value="geo-launch">🌍 Запуск нового ГЕО (план статей)</option>
+            <option value="cluster">🎯 Topical Cluster — кластер по теме (бонусы, слоты, платёжки)</option>
+            <option value="audit">🔧 Аудит существующего сайта (трафик стал, что улучшить)</option>
+            <option value="competitor-gap">🆚 Гэп-анализ конкурентов (что писать чтобы обогнать)</option>
+            <option value="evergreen">📚 Evergreen-стратегия (статьи которые не устаревают)</option>
+            <option value="hub-site">🏛 Hub-сайт для гео (полная структура сайта)</option>
           </select>
         </div>
-        <div class="sec"><div class="sec-title">🏢 Описание бизнеса</div>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Что продаёте / тип продукта</div>
-          <input type="text" id="str-product" placeholder="B2B SaaS / E-commerce / Курсы / Услуги..." style="margin-bottom:6px">
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Описание</div>
-          <textarea id="str-business" rows="3" placeholder="Что предлагает компания, основные проблемы клиентов которые решает"></textarea>
+        <div class="sec"><div class="sec-title">🌍 ГЕО и рынок</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Страна / ГЕО</div><select id="str-geo"></select></div>
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Язык</div><select id="str-lang"></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Валюта</div><select id="str-currency"></select></div>
+            <div><div style="font-size:10px;color:#64748b;margin-bottom:2px">Регулирование</div>
+              <select id="str-regulation">
+                <option value="regulated">🔒 Регулируемый рынок (лицензия)</option>
+                <option value="grey">⚠️ Серый рынок (без локальной лицензии)</option>
+                <option value="offshore">🌊 Офшор (Curacao)</option>
+                <option value="prohibited">🚫 Запрещённый рынок</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Локальные особенности</div>
+          <textarea id="str-local" rows="2" placeholder="Запреты на рекламу / любимые игры в гео / популярные платёжки / культурные особенности..."></textarea>
         </div>
-        <div class="sec"><div class="sec-title">👥 Целевая аудитория</div>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Кто покупатель / роль</div>
-          <input type="text" id="str-audience" placeholder="CFO в компаниях 50-500 чел / разработчики backend / HR директора..." style="margin-bottom:6px">
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Их боли и потребности</div>
-          <textarea id="str-pains" rows="3" placeholder="Долгие циклы согласования / ручная работа / сложная отчётность..."></textarea>
+        <div class="sec"><div class="sec-title">🎰 Продукт обзора</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Название казино / слота</div>
+          <input type="text" id="str-product" placeholder="1Win / Book of Dead / Sweet Bonanza..." style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип продукта / провайдер</div>
+          <input type="text" id="str-business" placeholder="Crash-игра / Online casino / Слот от Pragmatic Play..." style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Ключевые особенности (бонусы, RTP, фичи)</div>
+          <textarea id="str-features" rows="3" placeholder="100% Welcome Bonus до €500&#10;RTP 96.21%, волатильность high&#10;Free spins, кэшбэк, VIP программа"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">👥 Аудитория ГЕО</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Кто целевой игрок в этом ГЕО</div>
+          <input type="text" id="str-audience" placeholder="High rollers 30-50 / Casual игроки слотов / Криптоэнтузиасты..." style="margin-bottom:6px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Что ищут / какие запросы</div>
+          <textarea id="str-pains" rows="2" placeholder="Лучшие казино с быстрым выводом / казино без верификации / слоты с высоким RTP..."></textarea>
         </div>
       </div>
       <div>
-        <div class="sec"><div class="sec-title">📂 Контекст</div>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Уже существующий контент (если есть)</div>
-          <textarea id="str-existing" rows="3" placeholder="Список текущих статей или направлений&#10;Или: 'Блога нет' / 'Есть 200 случайных постов'"></textarea>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px;margin-top:6px">Список идей для приоритизации / тема для кластера (если scenario)</div>
-          <textarea id="str-ideas" rows="3" placeholder="Если приоритизация: список тем&#10;Если кластер: главная тема (напр. 'employee engagement')&#10;Если идеи: оставь пустым"></textarea>
+        <div class="sec"><div class="sec-title">📂 Конкурентный контекст</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Топ конкуренты в выдаче (URL или названия)</div>
+          <textarea id="str-existing" rows="3" placeholder="askgamblers.com&#10;casino.guru&#10;casinomeister.com&#10;Что у них хорошо/плохо"></textarea>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px;margin-top:6px">Дополнительный контекст / список идей</div>
+          <textarea id="str-ideas" rows="3" placeholder="Список тем для приоритизации&#10;Или тема для кластера&#10;Или текущие проблемы сайта"></textarea>
         </div>
         <div class="sec"><div class="sec-title">📋 Что включить в стратегию</div>
           <div style="display:flex;flex-direction:column;gap:6px">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-pillars" checked> 🏛 Content Pillars (3-5 основных направлений)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-journey" checked> 🛤 Buyer Journey Mapping (awareness → consideration → decision)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-cluster" checked> 🎯 Hub-and-Spoke Clusters (pillar + spoke articles)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-keywords" checked> 🔍 Keyword Research (по этапам воронки)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-priority" checked> 📊 Prioritization Framework (impact/fit/search/resources)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-calendar"> 📅 Content Calendar (план публикаций на 3 месяца)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-types"> 📚 Content Types Mix (searchable + shareable)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-internal"> 🔗 Internal Linking Strategy</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-distribution"> 📢 Distribution Channels (где публиковать)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-metrics"> 📈 Success Metrics (KPI для контента)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-structure" checked> 📐 Идеальная структура страницы (главы под ГЕО)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-tone" checked> 🎯 Тон + Стиль письма для этого ГЕО</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-keywords" checked> 🔍 Keyword Research (локальные запросы)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-intent" checked> 🧠 Search Intent Mapping (что хочет игрок)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-eeat" checked> 🏆 E-E-A-T для iGaming (как доказать экспертизу)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-cta" checked> 🎯 CTA-стратегия (где и как размещать)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-bonuses" checked> 💰 Подача бонусов под рынок</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-payments"> 💳 Локальные платёжные методы</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-legal"> ⚖ Юридическая безопасность (что писать, что не писать)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-cluster"> 🎯 Topical Cluster (Hub-and-Spoke)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-calendar"> 📅 Content Calendar (план на 3 месяца)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-internal"> 🔗 Internal Linking + URL Structure</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-priority"> 📊 Prioritization (impact/fit/search/resources)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="str-metrics"> 📈 KPI и метрики успеха</label>
           </div>
         </div>
         <div class="sec"><div class="sec-title">⚙ Ресурсы</div>
           <div style="font-size:10px;color:#64748b;margin-bottom:2px">Команда / частота публикаций</div>
-          <input type="text" id="str-resources" placeholder="1 копирайтер, 2 поста в неделю / Команда из 3, 4 поста в неделю" style="margin-bottom:6px">
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Целевой язык</div>
-          <select id="str-lang"></select>
+          <input type="text" id="str-resources" placeholder="2 копирайтера, 10 статей/неделю">
         </div>
         <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
           <div class="provider-grid" id="str-prov"></div>
           <div style="margin-top:6px"><select id="str-model"></select></div>
         </div>
-        <button class="btn btn-gen" onclick="runStrategy()">📋 Создать Контент-Стратегию</button>
+        <button class="btn btn-gen" onclick="runStrategy()">📋 Создать iGaming Стратегию</button>
         <div id="str-err" class="error hidden"></div>
       </div>
     </div>
@@ -1714,6 +1740,10 @@ function strInitModel(){const s=document.getElementById("str-model");if(!s)retur
 function strInitSelects(){
   const ls=document.getElementById("str-lang");if(!ls)return;
   LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.c;o.textContent=l.n;ls.appendChild(o)});ls.value="en";
+  const gs=document.getElementById("str-geo");
+  if(gs)COUNTRIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;gs.appendChild(o)});
+  const cs=document.getElementById("str-currency");
+  if(cs)CURS.forEach(c=>{const o=document.createElement("option");o.value=c.c;o.textContent=c.c+" "+c.s;cs.appendChild(o)});
   strInitProv();strInitModel();
 }
 
@@ -1722,51 +1752,190 @@ async function runStrategy(){
   const scenario=document.getElementById("str-scenario").value;
   const product=document.getElementById("str-product").value;
   const business=document.getElementById("str-business").value;
+  const features=document.getElementById("str-features").value;
   const audience=document.getElementById("str-audience").value;
   const pains=document.getElementById("str-pains").value;
   const existing=document.getElementById("str-existing").value;
   const ideas=document.getElementById("str-ideas").value;
   const resources=document.getElementById("str-resources").value;
+  const geoName=document.getElementById("str-geo").value||"";
   const lang=LANGS.find(l=>l.c===document.getElementById("str-lang").value)?.n||"English";
+  const currency=document.getElementById("str-currency").value;
+  const regulationVal=document.getElementById("str-regulation").value;
+  const regulationMap={
+    regulated:"🔒 РЕГУЛИРУЕМЫЙ рынок — нужна локальная лицензия (MGA, UKGC, AGCO, ADM и т.д.). Строгие правила рекламы и контента. Обязательное Responsible Gambling.",
+    grey:"⚠️ СЕРЫЙ рынок — нет локальной лицензии, но и нет полного запрета. Casino работают на офшорных лицензиях. Реклама ограничена. Игроки сами решают.",
+    offshore:"🌊 ОФШОР (Curacao) — лицензия Curacao eGaming. Минимум регуляции. Подходит для серых ГЕО. Меньше доверия у игроков.",
+    prohibited:"🚫 ЗАПРЕЩЁННЫЙ рынок — азартные игры официально запрещены. Высокие риски. Контент нужно делать осторожно (информационный, без прямых CTA)."
+  };
+  const local=document.getElementById("str-local").value;
   
-  if(!product||!business||!audience){errBox.textContent="⚠ Заполните: продукт, описание бизнеса и аудиторию";errBox.classList.remove("hidden");return}
+  if(!geoName){errBox.textContent="⚠ Выберите ГЕО (страну)";errBox.classList.remove("hidden");return}
   
   const scenarios={
-    new:"СТАРТ С НУЛЯ — компания только начинает контент-маркетинг, блога нет. Создай полную стратегию с нуля.",
-    audit:"АУДИТ существующего блога — 200+ постов, трафик не растёт. Контент 'случайный', без стратегии. Нужно: проанализировать что есть, найти hub-and-spoke возможности, дать решения update/consolidate/retire.",
-    prioritize:"ПРИОРИТИЗАЦИЯ идей — есть список тем, ограниченные ресурсы. Применить scoring framework (impact 40% / market-fit 30% / search 20% / resources 10%).",
-    cluster:"CONTENT CLUSTER (Hub-and-Spoke) — создать топический кластер по одной теме. Pillar page (3000+ слов) + 8-15 spoke articles. Internal linking структура.",
-    ideas:"ГЕНЕРАЦИЯ ИДЕЙ — создать список тем для контента. Использовать sources: keyword data, community forums (Reddit/Stack Overflow), competitor gaps, customer questions."
+    "single-casino":`СТРАТЕГИЯ ОБЗОРА ОДНОГО КАЗИНО для ${geoName}. Создай детальную стратегию написания одной страницы-обзора. Что в неё включить, какая структура работает в этом ГЕО, какие акценты делать, как презентовать казино под местного игрока.`,
+    "single-slot":`СТРАТЕГИЯ ОБЗОРА СЛОТА для ${geoName}. Детальный план одной страницы-обзора слота. Структура, акценты на RTP/волатильность/механики, как заинтересовать местного игрока.`,
+    "geo-launch":`ЗАПУСК НОВОГО ГЕО (${geoName}) — полный план статей для входа на этот рынок. Какие страницы создавать в первую очередь, на каких темах фокусироваться, hub-структура сайта.`,
+    "cluster":`TOPICAL CLUSTER (Hub-and-Spoke) по теме "${ideas}" для ${geoName}. Pillar page + 8-15 spoke articles. Internal linking. Тематическая авторитетность.`,
+    "audit":`АУДИТ существующего iGaming сайта на ${geoName}. Трафик упал, ранжирование плохое. Найти проблемы, дать решения: что обновить / consolidate / удалить.`,
+    "competitor-gap":`GAP-АНАЛИЗ конкурентов в ${geoName}. Что у топ-10 в SERP есть, чего нет у нас. Какие темы написать чтобы их обогнать. Контент-форматы которые работают в нише iGaming для этого ГЕО.`,
+    "evergreen":`EVERGREEN-СТРАТЕГИЯ для ${geoName}. Темы которые не устаревают (Best slots [year], How to play [game], Casino glossary, Strategy guides). План evergreen-контента + update-стратегия.`,
+    "hub-site":`HUB-САЙТ для ${geoName} — полная структура сайта-портала: главные категории, подкатегории, типы страниц, URL structure, internal linking архитектура.`
   };
   
-  let p=`Ты — эксперт по B2B content marketing и SEO. Создай детальную контент-стратегию.\n\n`;
+  let p=`Ты — эксперт по iGaming SEO и контент-маркетингу для аффилейт-сайтов казино. Создай детальную стратегию.\n\n`;
   p+=`СЦЕНАРИЙ: ${scenarios[scenario]}\n\n`;
-  p+=`ПРОДУКТ: ${product}\n`;
-  p+=`БИЗНЕС: ${business}\n`;
-  p+=`АУДИТОРИЯ: ${audience}\n`;
-  if(pains)p+=`БОЛИ КЛИЕНТОВ: ${pains}\n`;
-  if(existing)p+=`СУЩЕСТВУЮЩИЙ КОНТЕНТ: ${existing}\n`;
-  if(ideas){
-    if(scenario==="prioritize")p+=`СПИСОК ИДЕЙ ДЛЯ ПРИОРИТИЗАЦИИ:\n${ideas}\n`;
-    else if(scenario==="cluster")p+=`ТЕМА ДЛЯ КЛАСТЕРА: ${ideas}\n`;
-    else p+=`ДОПОЛНИТЕЛЬНО: ${ideas}\n`;
+  p+=`🌍 ГЕО И РЫНОК:\n`;
+  p+=`- Страна: ${geoName}\n`;
+  p+=`- Язык: ${lang}\n`;
+  p+=`- Валюта: ${currency}\n`;
+  p+=`- Тип рынка: ${regulationMap[regulationVal]}\n`;
+  if(local)p+=`- Локальные особенности: ${local}\n`;
+  p+=`\n`;
+  
+  if(product)p+=`🎰 ПРОДУКТ ОБЗОРА: ${product}\n`;
+  if(business)p+=`Тип / Провайдер: ${business}\n`;
+  if(features)p+=`Ключевые особенности:\n${features}\n`;
+  if(product||business)p+=`\n`;
+  
+  if(audience)p+=`👥 АУДИТОРИЯ В ГЕО: ${audience}\n`;
+  if(pains)p+=`Что ищут / запросы: ${pains}\n\n`;
+  
+  if(existing)p+=`🆚 КОНКУРЕНТЫ:\n${existing}\n\n`;
+  if(ideas&&scenario!=="cluster")p+=`ДОПОЛНИТЕЛЬНО: ${ideas}\n\n`;
+  if(resources)p+=`РЕСУРСЫ: ${resources}\n\n`;
+  
+  p+=`СОЗДАЙ СТРАТЕГИЮ ВКЛЮЧИВ:\n\n`;
+  
+  if(document.getElementById("str-structure").checked){
+    p+=`📐 ИДЕАЛЬНАЯ СТРУКТУРА СТРАНИЦЫ ДЛЯ ${geoName}:\n`;
+    p+=`Дай детальный план глав (H1, H2, H3) для этого ГЕО. Учитывай:\n`;
+    p+=`- Что игроки в ${geoName} хотят увидеть в первую очередь (search intent)\n`;
+    p+=`- Длина текста оптимальная для местного SERP\n`;
+    p+=`- Какие блоки обязательны (бонусы, RTP, платёжки, лицензия, мобильная версия и т.д.)\n`;
+    p+=`- Какие блоки специфичны для ${geoName} (например в Германии важна OASIS, в UK важен GamStop)\n`;
+    p+=`- Точная последовательность глав с приоритетами\n`;
+    p+=`- Типы блоков в каждой главе (P / P+T / P+L / P+HTML и т.д.)\n\n`;
   }
-  if(resources)p+=`РЕСУРСЫ: ${resources}\n`;
-  p+=`ЯЗЫК: ${lang}\n\n`;
   
-  p+=`СОЗДАЙ СТРАТЕГИЮ ВКЛЮЧИВ:\n`;
-  if(document.getElementById("str-pillars").checked)p+=`1. 🏛 CONTENT PILLARS (3-5 основных направлений) — каждое: название, описание, почему важно, типы контента\n`;
-  if(document.getElementById("str-journey").checked)p+=`2. 🛤 BUYER JOURNEY — типы контента по этапам:\n   - Awareness (TOFU) — проблема-ориентированный контент\n   - Consideration (MOFU) — решение-ориентированный\n   - Decision (BOFU) — продукт-ориентированный\n   - Implementation — onboarding/success\n   Для каждого этапа: типы контента, форматы, темы, CTA\n`;
-  if(document.getElementById("str-cluster").checked)p+=`3. 🎯 HUB-AND-SPOKE CLUSTERS — для каждого pillar:\n   - Pillar page тема (3000+ слов, comprehensive guide)\n   - 8-15 spoke articles с long-tail keywords\n   - Internal linking структура (как связаны hub и spokes)\n`;
-  if(document.getElementById("str-keywords").checked)p+=`4. 🔍 KEYWORD RESEARCH по этапам воронки:\n   - Awareness keywords (informational, "what is", "how to")\n   - Consideration keywords (comparison, "best", "alternatives")\n   - Decision keywords (commercial, "[product] review", "[product] pricing")\n   - Для каждого: примеры реальных запросов\n`;
-  if(document.getElementById("str-priority").checked)p+=`5. 📊 PRIORITIZATION FRAMEWORK с весами:\n   - Customer Impact (40%) — насколько влияет на customer journey\n   - Content-Market Fit (30%) — соответствует ли аудитории\n   - Search Potential (20%) — SEO opportunity\n   - Resources Required (10%) — сколько усилий нужно\n   Скоринг для каждой темы с обоснованием и финальным ranking\n`;
-  if(document.getElementById("str-calendar").checked)p+=`6. 📅 CONTENT CALENDAR на 3 месяца — таблица: неделя | тема | формат | приоритет | этап воронки | целевые keywords\n`;
-  if(document.getElementById("str-types").checked)p+=`7. 📚 CONTENT TYPES MIX:\n   - Searchable (SEO-driven) — guides, how-tos, comparisons, listicles\n   - Shareable (thought leadership) — original research, data reports, expert opinions, controversial takes\n   - Соотношение по бизнес-целям\n`;
-  if(document.getElementById("str-internal").checked)p+=`8. 🔗 INTERNAL LINKING STRATEGY:\n   - Hub-to-spoke связи\n   - Topical clusters\n   - Anchor text best practices\n   - URL structure\n`;
-  if(document.getElementById("str-distribution").checked)p+=`9. 📢 DISTRIBUTION CHANNELS — где публиковать:\n   - Owned (блог, email list, social)\n   - Earned (PR, guest posts, communities)\n   - Paid (ads, sponsorships)\n   - Specific platforms для данной аудитории\n`;
-  if(document.getElementById("str-metrics").checked)p+=`10. 📈 SUCCESS METRICS:\n    - Traffic metrics (organic sessions, pageviews)\n    - Engagement (time on page, scroll depth, social shares)\n    - Conversion (leads, signups, demos)\n    - SEO (rankings, backlinks, domain authority)\n    - Каждой метрике: что измеряет, как часто, целевые значения\n`;
+  if(document.getElementById("str-tone").checked){
+    p+=`🎯 ТОН И СТИЛЬ ПИСЬМА ДЛЯ ${geoName}:\n`;
+    p+=`- Какой стиль работает в ${geoName} (формальный / разговорный / экспертный / продающий)\n`;
+    p+=`- От какого лица писать (от бренда / эксперта / игрока / третьего лица)\n`;
+    p+=`- Культурные особенности языка ${lang}\n`;
+    p+=`- Локальный сленг или термины которые НЕ переводятся\n`;
+    p+=`- Что НЕ говорить (запрещённые формулировки, обещания выигрыша и т.д.)\n\n`;
+  }
   
-  p+=`\nФОРМАТ ОТВЕТА:\n- Используй markdown с заголовками (#, ##, ###)\n- Таблицы где уместно\n- Конкретные примеры из ниши клиента\n- Actionable шаги, не размытые рекомендации\n- Используй короткое тире "-", НЕ длинное "—"\n- Структурируй по разделам с emoji заголовками`;
+  if(document.getElementById("str-keywords").checked){
+    p+=`🔍 KEYWORD RESEARCH для ${geoName} (язык ${lang}):\n`;
+    p+=`- Primary keyword (для главного запроса в этом ГЕО)\n`;
+    p+=`- Secondary keywords (5-10 вспомогательных)\n`;
+    p+=`- LSI и семантические варианты\n`;
+    p+=`- Long-tail запросы локальной специфики\n`;
+    p+=`- Branded запросы (если продукт известен)\n`;
+    p+=`- Локальные слова и переводы (например "kasyno" vs "kasyna" в польском)\n\n`;
+  }
+  
+  if(document.getElementById("str-intent").checked){
+    p+=`🧠 SEARCH INTENT MAPPING:\n`;
+    p+=`- Informational ("how to play X")\n`;
+    p+=`- Commercial ("best casino ${geoName}")\n`;
+    p+=`- Navigational ("X casino login")\n`;
+    p+=`- Transactional ("sign up X casino")\n`;
+    p+=`Какой intent у нашей страницы и как под него оптимизировать\n\n`;
+  }
+  
+  if(document.getElementById("str-eeat").checked){
+    p+=`🏆 E-E-A-T ДЛЯ IGAMING:\n`;
+    p+=`- Experience: личный опыт игры на казино, скриншоты, видео\n`;
+    p+=`- Expertise: автор статьи (имя, биография, годы в индустрии)\n`;
+    p+=`- Authoritativeness: упоминание лицензии, регуляторов, бренда\n`;
+    p+=`- Trustworthiness: Responsible Gambling, fact-checking, дата проверки\n`;
+    p+=`Google особенно строго относится к iGaming (YMYL контент). Что обязательно нужно для ${geoName}.\n\n`;
+  }
+  
+  if(document.getElementById("str-cta").checked){
+    p+=`🎯 CTA-СТРАТЕГИЯ для ${geoName}:\n`;
+    p+=`- Сколько CTA-кнопок ставить в статью\n`;
+    p+=`- Где размещать (после первой главы, в середине, в конце, в таблице)\n`;
+    p+=`- Какой текст на кнопках в ${lang} (примеры: "Грати зараз" / "Spielen" / "Jouer maintenant")\n`;
+    p+=`- Стиль CTA (агрессивный / нейтральный) под местную аудиторию и регуляцию\n\n`;
+  }
+  
+  if(document.getElementById("str-bonuses").checked){
+    p+=`💰 ПОДАЧА БОНУСОВ ПОД ${geoName}:\n`;
+    p+=`- Какие типы бонусов наиболее ценятся (Welcome / No Deposit / Free Spins / Cashback)\n`;
+    p+=`- Как презентовать (в виде таблицы / списка / текста)\n`;
+    p+=`- Что обязательно указывать (wagering, max bet, restricted games, время действия)\n`;
+    p+=`- Запретные формулировки (например в UK нельзя писать "free")\n`;
+    p+=`- Локальная валюта (${currency}) — как указывать суммы\n\n`;
+  }
+  
+  if(document.getElementById("str-payments").checked){
+    p+=`💳 ЛОКАЛЬНЫЕ ПЛАТЁЖНЫЕ МЕТОДЫ ДЛЯ ${geoName}:\n`;
+    p+=`- Топ-5 популярных методов в ${geoName} (банковские карты / e-wallets / крипто / локальные)\n`;
+    p+=`- Особенности: лимиты, время вывода, комиссии\n`;
+    p+=`- Что предпочитают local игроки\n`;
+    p+=`- Как представить эту информацию в обзоре\n\n`;
+  }
+  
+  if(document.getElementById("str-legal").checked){
+    p+=`⚖ ЮРИДИЧЕСКАЯ БЕЗОПАСНОСТЬ ДЛЯ ${geoName}:\n`;
+    p+=`- Регуляция: ${regulationMap[regulationVal]}\n`;
+    p+=`- Что МОЖНО писать в этом ГЕО\n`;
+    p+=`- Что НЕЛЬЗЯ писать (запрещённые формулировки, обещания)\n`;
+    p+=`- Обязательные элементы (Responsible Gambling, 18+, ссылки на помощь)\n`;
+    p+=`- Помощь в азартной зависимости — локальные сервисы (BeGambleAware, GamCare, GamStop, OASIS, etc)\n\n`;
+  }
+  
+  if(document.getElementById("str-cluster").checked){
+    p+=`🎯 TOPICAL CLUSTER (Hub-and-Spoke):\n`;
+    p+=`- Pillar page (3000+ слов) — основная тема для ${geoName}\n`;
+    p+=`- 8-15 spoke articles с long-tail запросами\n`;
+    p+=`- Internal linking структура (как hub связан со spokes и наоборот)\n`;
+    p+=`- Anchor text стратегия для linking\n\n`;
+  }
+  
+  if(document.getElementById("str-calendar").checked){
+    p+=`📅 CONTENT CALENDAR на 3 месяца:\n`;
+    p+=`Таблица: неделя | тема | тип страницы (обзор казино/слота/гайд) | приоритет | основной keyword | этап\n\n`;
+  }
+  
+  if(document.getElementById("str-internal").checked){
+    p+=`🔗 INTERNAL LINKING + URL STRUCTURE для ${geoName}:\n`;
+    p+=`- URL pattern (например /${geoName.toLowerCase()}/casino-name-review/)\n`;
+    p+=`- Hub-to-spoke связи\n`;
+    p+=`- Breadcrumbs\n`;
+    p+=`- Категории сайта оптимальные для ${geoName}\n\n`;
+  }
+  
+  if(document.getElementById("str-priority").checked){
+    p+=`📊 PRIORITIZATION FRAMEWORK:\n`;
+    p+=`- Customer Impact (40%) — насколько влияет на конверсию для ${geoName}\n`;
+    p+=`- Market Fit (30%) — соответствует ли локальной аудитории\n`;
+    p+=`- Search Potential (20%) — SEO opportunity в ${geoName}\n`;
+    p+=`- Resources (10%) — сложность создания\n`;
+    p+=`Скоринг для каждой темы с финальным ранкингом.\n\n`;
+  }
+  
+  if(document.getElementById("str-metrics").checked){
+    p+=`📈 KPI И МЕТРИКИ УСПЕХА:\n`;
+    p+=`- Traffic (organic clicks из ${geoName})\n`;
+    p+=`- Ranking (позиции по основным запросам в Google ${geoName})\n`;
+    p+=`- Conversion: CTR на CTA, регистрации, FTD (First Time Deposit)\n`;
+    p+=`- Engagement: time on page, bounce rate, scroll depth\n`;
+    p+=`- Целевые значения для каждой метрики\n\n`;
+  }
+  
+  p+=`ФОРМАТ ОТВЕТА:\n`;
+  p+=`- Используй markdown с заголовками (#, ##, ###)\n`;
+  p+=`- Таблицы где уместно\n`;
+  p+=`- Конкретные примеры под ${geoName} (а не общие фразы)\n`;
+  p+=`- Actionable шаги, не размытые рекомендации\n`;
+  p+=`- Используй короткое тире "-", НЕ длинное "—"\n`;
+  p+=`- Структурируй по разделам с emoji заголовками\n`;
+  p+=`- Учитывай ВСЕ параметры (ГЕО, регуляция, язык, валюта) в каждой рекомендации`;
   
   const overlay=document.getElementById("overlay");
   const pn=PROVIDERS.find(x=>x.id===strProv);
