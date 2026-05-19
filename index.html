@@ -131,13 +131,11 @@ textarea{resize:vertical;line-height:1.5}
     <div class="tabs">
     <button class="tab active" onclick="switchTab('form',this)">⚙ Параметры</button>
     <button class="tab" onclick="switchTab('rewrite',this)">🔄 Рерайт</button>
-    <button class="tab" onclick="switchTab('audit',this)">🔍 SEO Audit</button>
+    <button class="tab" onclick="switchTab('audit',this)">🔍 Аудит</button>
     <button class="tab" onclick="switchTab('strategy',this)">📋 Стратегия</button>
-    <button class="tab" onclick="switchTab('analytics',this)">📊 Analytics</button>
     <button class="tab" onclick="switchTab('competitors',this)">🆚 Конкуренты</button>
     <button class="tab" onclick="switchTab('chat',this)">💬 Чат</button>
     <button class="tab" onclick="switchTab('settings',this)">🔑 API</button>
-    <button class="tab" id="tab-code" disabled onclick="switchTab('code',this)">⟨/⟩ Код</button>
     <button class="tab" id="tab-preview" disabled onclick="switchTab('preview',this)">👁 Просмотр</button>
     <button class="tab" id="tab-split" disabled onclick="switchTab('split',this)">◫ Код+Просмотр</button>
   </div>
@@ -232,6 +230,20 @@ textarea{resize:vertical;line-height:1.5}
       <div id="error-box" class="error hidden"></div>
     </div>
   </div><!-- /grid -->
+  <!-- Projects / Workspace -->
+  <div class="sec" style="margin-top:12px">
+    <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+      📁 Проекты (пресеты настроек)
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-sm" onclick="saveCurrentProject()" style="font-size:10px;padding:4px 8px">💾 Сохранить как проект</button>
+        <button class="btn btn-sm" onclick="exportProjects()" style="font-size:10px;padding:4px 8px;background:#22d3ee;color:#0f172a">📤 Экспорт</button>
+        <button class="btn btn-sm" onclick="document.getElementById('import-projects-file').click()" style="font-size:10px;padding:4px 8px;background:#a855f7;color:#fff">📥 Импорт</button>
+        <input type="file" id="import-projects-file" accept=".json" style="display:none" onchange="importProjects(this.files[0])">
+      </div>
+    </div>
+    <div style="font-size:10px;color:#64748b;margin-bottom:6px">Сохраняйте набор настроек (ГЕО, ключевые, главы, стиль) как пресет для повторного использования</div>
+    <div id="projects-list" style="max-height:200px;overflow-y:auto"></div>
+  </div>
   <!-- Article History -->
   <div class="sec" style="margin-top:12px">
     <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">
@@ -311,8 +323,13 @@ textarea{resize:vertical;line-height:1.5}
     </div>
   </div>
 
-  <!-- SEO AUDIT -->
+  <!-- AUDIT (SEO + Analytics combined) -->
   <div id="page-audit" class="hidden">
+    <div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-sm" id="amode-seo" onclick="switchAuditMode('seo')" style="padding:8px 18px">🔍 SEO Аудит</button>
+      <button class="btn btn-sm" id="amode-ana" onclick="switchAuditMode('analytics')" style="padding:8px 18px;background:#1e293b;color:#94a3b8">📊 Analytics Setup</button>
+    </div>
+    <div id="audit-seo-section">
     <div class="grid">
       <div>
         <div class="sec"><div class="sec-title">🔍 SEO Audit — Аудит страницы</div>
@@ -380,6 +397,73 @@ textarea{resize:vertical;line-height:1.5}
         <div id="audit-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
       </div>
     </div>
+    </div><!-- /audit-seo-section -->
+    <div id="audit-analytics-section" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="sec"><div class="sec-title">📊 Analytics Setup — План трекинга</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px">AI сгенерирует tracking plan, GA4 события, GTM код, UTM-стратегию под ваш сайт</div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип сайта</div>
+          <select id="ana-type" style="margin-bottom:8px">
+            <option value="saas">SaaS / Сервис</option>
+            <option value="ecommerce">E-commerce / Интернет-магазин</option>
+            <option value="content">Контентный сайт / Блог</option>
+            <option value="lead">Lead Generation</option>
+            <option value="casino">iGaming / Casino</option>
+            <option value="other">Другое</option>
+          </select>
+          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Описание бизнеса</div>
+          <textarea id="ana-business" rows="3" placeholder="Кратко: что продаёте, кому, какой основной CTA"></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">🎯 Цели трекинга (что хотите измерить)</div>
+          <textarea id="ana-goals" rows="4" placeholder="Регистрации пользователей&#10;Использование ключевых функций&#10;Покупки и апгрейды&#10;Источники трафика..."></textarea>
+        </div>
+        <div class="sec"><div class="sec-title">🛠 Используемые инструменты</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-ga4" checked> Google Analytics 4 (GA4)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gtm" checked> Google Tag Manager (GTM)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-fb"> Facebook / Meta Pixel</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-hotjar"> Hotjar / Microsoft Clarity</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-mixpanel"> Mixpanel / Amplitude</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-linkedin"> LinkedIn Insight Tag</label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="sec"><div class="sec-title">📋 Что генерировать</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-events" checked> 📌 Tracking Plan (события с параметрами)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gtm-code" checked> 💻 GTM Data Layer код</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-utm" checked> 🔗 UTM-стратегия и шаблоны</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gdpr"> 🍪 GDPR Consent setup</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-funnels"> 📈 Conversion funnels</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-dashboards"> 📊 GA4 Reports и Dashboards</label>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">🌐 Каналы трафика (для UTM)</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-google" checked> Google Ads</label>
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-meta" checked> Meta Ads (Facebook/Instagram)</label>
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-linkedin"> LinkedIn Ads</label>
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-newsletter"> Email / Newsletter</label>
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-organic"> Organic Social</label>
+            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-affiliate"> Affiliate / партнёрки</label>
+          </div>
+        </div>
+        <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
+          <div class="provider-grid" id="ana-prov"></div>
+          <div style="margin-top:6px"><select id="ana-model"></select></div>
+        </div>
+        <button class="btn btn-gen" onclick="runAnalytics()">📊 Сгенерировать Analytics план</button>
+        <div id="ana-err" class="error hidden"></div>
+      </div>
+    </div>
+    <div id="ana-results-wrap" class="hidden" style="margin-top:12px">
+      <div class="sec">
+        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">📊 Analytics Plan <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="copyAnalyticsResults()">📋 Копировать</button><button class="btn btn-sm" onclick="document.getElementById('ana-results-wrap').classList.add('hidden')">✕</button></div></div>
+        <div id="ana-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
+      </div>
+    </div></div>
   </div>
 
   <!-- CONTENT STRATEGY -->
@@ -480,74 +564,6 @@ textarea{resize:vertical;line-height:1.5}
   </div>
 
   <!-- ANALYTICS -->
-  <div id="page-analytics" class="hidden">
-    <div class="grid">
-      <div>
-        <div class="sec"><div class="sec-title">📊 Analytics Setup — План трекинга</div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:8px">AI сгенерирует tracking plan, GA4 события, GTM код, UTM-стратегию под ваш сайт</div>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Тип сайта</div>
-          <select id="ana-type" style="margin-bottom:8px">
-            <option value="saas">SaaS / Сервис</option>
-            <option value="ecommerce">E-commerce / Интернет-магазин</option>
-            <option value="content">Контентный сайт / Блог</option>
-            <option value="lead">Lead Generation</option>
-            <option value="casino">iGaming / Casino</option>
-            <option value="other">Другое</option>
-          </select>
-          <div style="font-size:10px;color:#64748b;margin-bottom:2px">Описание бизнеса</div>
-          <textarea id="ana-business" rows="3" placeholder="Кратко: что продаёте, кому, какой основной CTA"></textarea>
-        </div>
-        <div class="sec"><div class="sec-title">🎯 Цели трекинга (что хотите измерить)</div>
-          <textarea id="ana-goals" rows="4" placeholder="Регистрации пользователей&#10;Использование ключевых функций&#10;Покупки и апгрейды&#10;Источники трафика..."></textarea>
-        </div>
-        <div class="sec"><div class="sec-title">🛠 Используемые инструменты</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-ga4" checked> Google Analytics 4 (GA4)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gtm" checked> Google Tag Manager (GTM)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-fb"> Facebook / Meta Pixel</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-hotjar"> Hotjar / Microsoft Clarity</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-mixpanel"> Mixpanel / Amplitude</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-linkedin"> LinkedIn Insight Tag</label>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="sec"><div class="sec-title">📋 Что генерировать</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-events" checked> 📌 Tracking Plan (события с параметрами)</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gtm-code" checked> 💻 GTM Data Layer код</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-utm" checked> 🔗 UTM-стратегия и шаблоны</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-gdpr"> 🍪 GDPR Consent setup</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-funnels"> 📈 Conversion funnels</label>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="ana-dashboards"> 📊 GA4 Reports и Dashboards</label>
-          </div>
-        </div>
-        <div class="sec"><div class="sec-title">🌐 Каналы трафика (для UTM)</div>
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-google" checked> Google Ads</label>
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-meta" checked> Meta Ads (Facebook/Instagram)</label>
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-linkedin"> LinkedIn Ads</label>
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-newsletter"> Email / Newsletter</label>
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-organic"> Organic Social</label>
-            <label style="font-size:11px;cursor:pointer"><input type="checkbox" id="ana-ch-affiliate"> Affiliate / партнёрки</label>
-          </div>
-        </div>
-        <div class="sec"><div class="sec-title">🤖 AI Провайдер</div>
-          <div class="provider-grid" id="ana-prov"></div>
-          <div style="margin-top:6px"><select id="ana-model"></select></div>
-        </div>
-        <button class="btn btn-gen" onclick="runAnalytics()">📊 Сгенерировать Analytics план</button>
-        <div id="ana-err" class="error hidden"></div>
-      </div>
-    </div>
-    <div id="ana-results-wrap" class="hidden" style="margin-top:12px">
-      <div class="sec">
-        <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">📊 Analytics Plan <div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="copyAnalyticsResults()">📋 Копировать</button><button class="btn btn-sm" onclick="document.getElementById('ana-results-wrap').classList.add('hidden')">✕</button></div></div>
-        <div id="ana-results" style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:#cbd5e1"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- COMPETITORS -->
   <div id="page-competitors" class="hidden">
     <div class="grid">
@@ -678,6 +694,14 @@ textarea{resize:vertical;line-height:1.5}
         <input type="text" id="proxy-url" placeholder="https://your-worker.your-name.workers.dev" style="margin-bottom:6px">
         <button class="btn btn-sm" onclick="saveProxy()" style="width:100%;padding:10px">💾 Сохранить Proxy URL</button>
       </div>
+      <div style="margin-top:12px;padding:12px;background:#0a1220;border:1px solid #1e293b;border-radius:8px">
+        <div style="font-size:12px;font-weight:600;color:#22d3ee;margin-bottom:6px">📤 WordPress публикация</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:6px">Прямая публикация статьи как черновик в ваш WordPress. Создайте Application Password: Пользователи → Профиль → Application Passwords.</div>
+        <input type="text" id="wp-url" placeholder="https://ваш-сайт.com" style="margin-bottom:4px">
+        <input type="text" id="wp-user" placeholder="WordPress логин" style="margin-bottom:4px">
+        <input type="password" id="wp-pass" placeholder="Application Password (xxxx xxxx xxxx xxxx)" style="margin-bottom:6px">
+        <button class="btn btn-sm" onclick="saveWPCreds()" style="width:100%;padding:10px">💾 Сохранить WordPress данные</button>
+      </div>
     </div>
     </div><!-- /api-unlocked -->
   </div>
@@ -702,10 +726,16 @@ textarea{resize:vertical;line-height:1.5}
   <div id="page-split" class="hidden">
     <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
       <button class="btn btn-sm" onclick="copyCode()">📋 Копировать</button>
-      <button class="btn btn-sm" onclick="generateMeta()" style="background:#22d3ee;color:#0f172a">🏷 Meta title+description</button>
-      <button class="btn btn-sm" onclick="generateAlts()" style="background:#a855f7;color:#fff">🖼 Alt-тексты</button>
-      <button class="btn btn-sm" onclick="runSeoAnalysis()" style="background:#22c55e;color:#0f172a">📊 SEO-анализ</button>
-      <button class="btn btn-sm" onclick="continueGeneration()" style="background:#f59e0b;color:#0f172a">▶ Продолжить генерацию</button>
+      <button class="btn btn-sm" onclick="generateMeta()" style="background:#22d3ee;color:#0f172a">🏷 Meta</button>
+      <button class="btn btn-sm" onclick="generateAlts()" style="background:#a855f7;color:#fff">🖼 Alt</button>
+      <button class="btn btn-sm" onclick="runSeoAnalysis()" style="background:#22c55e;color:#0f172a">📊 SEO</button>
+      <button class="btn btn-sm" onclick="runAIDetector()" style="background:#ef4444;color:#fff">🤖 AI-detector</button>
+      <button class="btn btn-sm" onclick="autoFactCheck()" style="background:#f97316;color:#fff">🔍 Fact-check</button>
+      <button class="btn btn-sm" onclick="addInternalLinks()" style="background:#3b82f6;color:#fff">🔗 Внутр.ссылки</button>
+      <button class="btn btn-sm" onclick="continueGeneration()" style="background:#f59e0b;color:#0f172a">▶ Продолжить</button>
+      <button class="btn btn-sm" onclick="publishToWP()" style="background:#21759b;color:#fff">📤 В WordPress</button>
+      <button class="btn btn-sm preview-mode-btn active" data-mode="desktop" onclick="togglePreviewMode('desktop')" style="margin-left:auto">💻</button>
+      <button class="btn btn-sm preview-mode-btn" data-mode="mobile" onclick="togglePreviewMode('mobile')">📱</button>
     </div>
     <!-- SEO Analysis Panel -->
     <div id="seo-panel" class="hidden" style="margin-bottom:10px">
@@ -1006,7 +1036,7 @@ function renderCTABtns(){
 function switchTab(id,btn){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   if(btn)btn.classList.add("active");
-  ["form","settings","code","preview","split","rewrite","chat","audit","analytics","competitors","strategy"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
+  ["form","settings","code","preview","split","rewrite","chat","audit","competitors","strategy"].forEach(p=>{const e=document.getElementById("page-"+p);if(e)e.classList.add("hidden")});
   document.getElementById("page-"+id).classList.remove("hidden");
   if(id==="settings"&&sessionStorage.getItem("api_unlocked")==="1"){document.getElementById("api-locked").style.display="none";document.getElementById("api-unlocked").classList.remove("hidden")}
   if(id==="code"){document.getElementById("code-area").value=generatedCode;updateLines()}
@@ -2138,6 +2168,276 @@ async function runCompetitors(){
 function copyCmpResults(){navigator.clipboard.writeText(cmpResultsText);alert("Скопировано!")}
 function useCmpAsArticle(){generatedCode=cmpResultsText;enableOutputTabs();switchTab("split",null);alert("Comparison Page загружен в редактор!")}
 
+// ===== AUDIT MODE SWITCHER =====
+function switchAuditMode(mode){
+  const seoBtn=document.getElementById("amode-seo"),anaBtn=document.getElementById("amode-ana");
+  const seoSec=document.getElementById("audit-seo-section"),anaSec=document.getElementById("audit-analytics-section");
+  if(mode==="seo"){
+    seoSec.classList.remove("hidden");anaSec.classList.add("hidden");
+    seoBtn.style.background="";seoBtn.style.color="";
+    anaBtn.style.background="#1e293b";anaBtn.style.color="#94a3b8";
+  }else{
+    seoSec.classList.add("hidden");anaSec.classList.remove("hidden");
+    anaBtn.style.background="";anaBtn.style.color="";
+    seoBtn.style.background="#1e293b";seoBtn.style.color="#94a3b8";
+  }
+}
+
+// ===== WORDPRESS PUBLISH =====
+function saveWPCreds(){
+  const url=document.getElementById("wp-url").value.trim();
+  const user=document.getElementById("wp-user").value.trim();
+  const pass=document.getElementById("wp-pass").value.trim();
+  if(url)localStorage.setItem("wp_url",url);
+  if(user)localStorage.setItem("wp_user",user);
+  if(pass)localStorage.setItem("wp_pass",pass);
+  alert("WordPress данные сохранены!");
+}
+function loadWPCreds(){
+  const u=document.getElementById("wp-url"),us=document.getElementById("wp-user"),p=document.getElementById("wp-pass");
+  if(u)u.value=localStorage.getItem("wp_url")||"";
+  if(us)us.value=localStorage.getItem("wp_user")||"";
+  if(p)p.value=localStorage.getItem("wp_pass")||"";
+}
+async function publishToWP(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const url=localStorage.getItem("wp_url"),user=localStorage.getItem("wp_user"),pass=localStorage.getItem("wp_pass");
+  if(!url||!user||!pass){alert("Сначала укажите WordPress URL, логин и Application Password в API");return}
+  const topic=document.getElementById("topic")?.value||"Без названия";
+  const title=prompt("Заголовок поста:",topic);
+  if(!title)return;
+  const overlay=document.getElementById("overlay");
+  document.getElementById("overlay-title").textContent="Публикация в WordPress...";
+  document.getElementById("overlay-sub").textContent="Отправка на "+url;
+  document.getElementById("overlay-provider").textContent="WordPress REST API";
+  overlay.classList.remove("hidden");
+  try{
+    const auth=btoa(user+":"+pass);
+    const r=await fetch(url.replace(/\/$/,"")+"/wp-json/wp/v2/posts",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Basic "+auth},
+      body:JSON.stringify({title,content:generatedCode,status:"draft"})
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error("WP "+r.status+": "+(e?.message||r.statusText))}
+    const data=await r.json();
+    overlay.classList.add("hidden");
+    if(confirm("✅ Опубликовано как черновик!\nID: "+data.id+"\nОткрыть в WordPress?"))window.open(data.link?data.link.replace("?p=","wp-admin/post.php?action=edit&post="):url+"/wp-admin/post.php?post="+data.id+"&action=edit","_blank");
+  }catch(e){overlay.classList.add("hidden");alert("⚠ "+e.message+"\n\nПроверьте:\n- URL сайта верный\n- Application Password создан\n- CORS разрешён или включён WP CORS плагин")}
+}
+
+// ===== MOBILE/DESKTOP PREVIEW =====
+function togglePreviewMode(mode){
+  const iframes=["split-iframe","preview-iframe"];
+  iframes.forEach(id=>{
+    const f=document.getElementById(id);if(!f)return;
+    if(mode==="mobile"){f.style.maxWidth="375px";f.style.margin="0 auto"}
+    else{f.style.maxWidth="";f.style.margin=""}
+  });
+  document.querySelectorAll(".preview-mode-btn").forEach(b=>b.classList.remove("active"));
+  const ab=document.querySelector('.preview-mode-btn[data-mode="'+mode+'"]');
+  if(ab)ab.classList.add("active");
+}
+
+// ===== AI DETECTOR =====
+function runAIDetector(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const text=generatedCode.replace(/<[^>]*>/g," ").replace(/<!--[^>]*-->/g,"").toLowerCase();
+  const aiMarkers=["seamless","robust","cutting-edge","state-of-the-art","top-tier","unbeatable","ultimate","unparalleled","unforgettable","immersive","embark","unleash","dive in","comprehensive","tailored","leveraging","ensuring","streamline","facilitate","empower","navigate","unlock","elevate","enhance","optimize","robust","dynamic","innovative","revolutionary"];
+  const aiPatterns=[/from \w+ to \w+/gi,/whether \w+ or \w+/gi,/it offers/gi,/it provides/gi,/it features/gi,/the result\?/gi,/the best part\?/gi,/it is important to note/gi,/it is worth noting/gi];
+  
+  let markerHits=0,patternHits=0,hitDetails=[];
+  aiMarkers.forEach(m=>{const re=new RegExp("\\b"+m+"\\b","gi");const matches=text.match(re);if(matches){markerHits+=matches.length;hitDetails.push(`"${m}": ${matches.length}x`)}});
+  aiPatterns.forEach(p=>{const matches=text.match(p);if(matches)patternHits+=matches.length});
+  
+  const words=text.split(/\s+/).filter(Boolean);
+  const sentences=text.split(/[.!?]+/).filter(s=>s.trim().length>5);
+  const avgLen=sentences.length?words.length/sentences.length:0;
+  const variance=sentences.length?sentences.map(s=>s.split(/\s+/).length).reduce((a,b)=>a+Math.abs(b-avgLen),0)/sentences.length:0;
+  const rhythmScore=variance>4?100:Math.min(100,variance*25);// higher variance = more human
+  
+  // Long dash check
+  const longDashes=(generatedCode.match(/—/g)||[]).length;
+  
+  let aiScore=Math.min(100,(markerHits*3)+(patternHits*5)+(longDashes*10)+(rhythmScore<30?30:0));
+  const humanScore=100-aiScore;
+  const color=humanScore>=70?"#22c55e":humanScore>=40?"#eab308":"#ef4444";
+  const verdict=humanScore>=70?"🟢 Похоже на человека":humanScore>=40?"🟡 Подозрительно":"🔴 Явная AI-генерация";
+  
+  let html=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div style="width:60px;height:60px;border-radius:50%;border:4px solid ${color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:${color}">${humanScore}</div><div><div style="font-size:14px;font-weight:600;color:#e2e8f0">${verdict}</div><div style="font-size:11px;color:#64748b">Human score: ${humanScore}/100 (AI score: ${aiScore})</div></div></div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-bottom:10px">`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:${markerHits>5?'#ef4444':'#22c55e'}">${markerHits}</div><div style="font-size:9px;color:#64748b">AI-маркеров</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:${patternHits>3?'#ef4444':'#22c55e'}">${patternHits}</div><div style="font-size:9px;color:#64748b">AI-паттернов</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:${longDashes>0?'#ef4444':'#22c55e'}">${longDashes}</div><div style="font-size:9px;color:#64748b">Длинных тире "—"</div></div>`;
+  html+=`<div style="text-align:center;padding:8px;background:#080f1a;border-radius:6px"><div style="font-size:18px;font-weight:700;color:${rhythmScore>=50?'#22c55e':'#ef4444'}">${Math.round(rhythmScore)}</div><div style="font-size:9px;color:#64748b">Ритм текста</div></div>`;
+  html+=`</div>`;
+  if(hitDetails.length){
+    html+=`<div style="font-size:11px;color:#94a3b8;margin-bottom:4px">Найденные AI-маркеры:</div><div style="font-size:11px;color:#cbd5e1;line-height:1.6">${hitDetails.join(", ")}</div>`;
+  }
+  document.getElementById("seo-results").innerHTML=html;
+  document.getElementById("seo-panel").classList.remove("hidden");
+}
+
+// ===== AUTO FACT-CHECK =====
+async function autoFactCheck(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const source=document.getElementById("source")?.value||"";
+  const filesText=uploadedFiles?uploadedFiles.filter(f=>f.type==="text").map(f=>f.content).join("\n"):"";
+  if(!source&&!filesText){alert("Нет источника или файлов для проверки. Заполните поле 'Источник' или загрузите файлы.");return}
+  const overlay=document.getElementById("overlay");
+  const prov=lastGenProv||selectedProvider;
+  const model=lastGenModel||document.getElementById("model-select").value;
+  document.getElementById("overlay-title").textContent="Fact-Check...";
+  document.getElementById("overlay-sub").textContent="Проверка фактов и цифр...";
+  const pn=PROVIDERS.find(x=>x.id===prov);
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+model;
+  overlay.classList.remove("hidden");
+  try{
+    const apiKey=localStorage.getItem("apikey_"+prov);
+    if(!apiKey)throw new Error("API ключ не установлен");
+    let p="Ты — fact-checker. Проверь сгенерированную статью на соответствие источникам.\n\n";
+    if(source)p+="ИСТОЧНИК-URL: "+source+"\n";
+    if(filesText)p+="ЗАГРУЖЕННЫЕ ФАЙЛЫ:\n"+filesText.substring(0,5000)+"\n\n";
+    p+="\nСТАТЬЯ:\n"+generatedCode.substring(0,8000)+"\n\n";
+    p+="ПРОВЕРЬ:\n1. Все ли цифры/проценты/RTP/бонусы соответствуют источнику?\n2. Даты соответствуют?\n3. Названия провайдеров/игр правильные?\n4. Какие факты AI мог придумать (галлюцинации)?\n\nОТВЕТ В ФОРМАТЕ:\n✅ ПОДТВЕРЖДЕНО: список фактов которые соответствуют\n⚠️ ПОДОЗРИТЕЛЬНО: факты которые невозможно проверить\n❌ ОШИБКИ: факты которые НЕ соответствуют источнику\n💡 РЕКОМЕНДАЦИИ: что исправить\n\nКороткое тире '-', не длинное '—'.";
+    let result;
+    if(prov==="gemini")result=await callGemini(p,apiKey,model);
+    else if(prov==="claude")result=await callClaude(p,apiKey,model);
+    else{const urls={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};result=await callOpenAICompat(p,apiKey,model,urls[prov])}
+    overlay.classList.add("hidden");
+    document.getElementById("meta-results").innerHTML=`<div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:6px">🔍 Fact-Check Report:</div><div style="font-size:12px;white-space:pre-wrap;color:#cbd5e1;line-height:1.7">${result.replace(/</g,"&lt;")}</div>`;
+    document.getElementById("meta-panel").classList.remove("hidden");
+  }catch(e){overlay.classList.add("hidden");alert("⚠ "+e.message)}
+}
+
+// ===== INTERNAL LINKS =====
+async function addInternalLinks(){
+  if(!generatedCode){alert("Сначала сгенерируйте статью");return}
+  const urls=prompt("Вставьте список URL для внутренних ссылок (по одному на строку):\n\nФормат:\nhttps://site.com/page1 | Anchor text\nhttps://site.com/page2 | Другой anchor","");
+  if(!urls)return;
+  const links=urls.split("\n").filter(l=>l.includes("|")).map(l=>{const[url,anchor]=l.split("|").map(s=>s.trim());return{url,anchor}});
+  if(!links.length){alert("Нужно минимум 1 URL в формате 'URL | Anchor'");return}
+  const overlay=document.getElementById("overlay");
+  const prov=lastGenProv||selectedProvider;
+  const model=lastGenModel||document.getElementById("model-select").value;
+  document.getElementById("overlay-title").textContent="Расстановка внутренних ссылок...";
+  document.getElementById("overlay-sub").textContent=`${links.length} ссылок`;
+  const pn=PROVIDERS.find(x=>x.id===prov);
+  document.getElementById("overlay-provider").textContent=(pn?pn.n:"")+" • "+model;
+  overlay.classList.remove("hidden");
+  try{
+    const apiKey=localStorage.getItem("apikey_"+prov);
+    let p="Расставь внутренние ссылки в HTML статье. Для каждого anchor найди подходящее место в тексте и оберни его в <a href='URL'>anchor</a>.\n\nВНУТРЕННИЕ ССЫЛКИ:\n";
+    links.forEach(l=>{p+=`- ${l.anchor} → ${l.url}\n`});
+    p+="\nСТАТЬЯ:\n"+generatedCode+"\n\nПРАВИЛА:\n1. Каждый anchor вставляй только 1 раз\n2. Выбирай естественное место в тексте\n3. НЕ меняй остальной текст, только добавляй <a> теги\n4. Верни ВСЮ статью с внесёнными изменениями\n5. НЕ оборачивай ответ в ```html```\n6. Короткое тире '-', не '—'";
+    let result;
+    if(prov==="gemini")result=await callGemini(p,apiKey,model);
+    else if(prov==="claude")result=await callClaude(p,apiKey,model);
+    else{const urls2={openai:"https://api.openai.com/v1/chat/completions",deepseek:"https://api.deepseek.com/chat/completions",mistral:"https://api.mistral.ai/v1/chat/completions",grok:"https://api.x.ai/v1/chat/completions"};result=await callOpenAICompat(p,apiKey,model,urls2[prov])}
+    result=result.replace(/^```html?\s*/i,"").replace(/\s*```$/i,"").trim();
+    generatedCode=result;
+    overlay.classList.add("hidden");
+    switchTab("split",null);
+    alert(`✅ Внутренние ссылки расставлены (${links.length} шт)`);
+  }catch(e){overlay.classList.add("hidden");alert("⚠ "+e.message)}
+}
+
+// ===== DRAG & DROP =====
+function initDragDrop(){
+  document.querySelectorAll("textarea,input[type='text']").forEach(el=>{
+    el.addEventListener("dragover",e=>{e.preventDefault();el.style.borderColor="#22d3ee"});
+    el.addEventListener("dragleave",()=>{el.style.borderColor=""});
+    el.addEventListener("drop",e=>{
+      e.preventDefault();el.style.borderColor="";
+      // URL/text drop
+      const text=e.dataTransfer.getData("text/plain")||e.dataTransfer.getData("text/uri-list");
+      if(text){el.value=el.value?el.value+"\n"+text:text;el.dispatchEvent(new Event("input"));return}
+      // File drop
+      const files=e.dataTransfer.files;
+      if(files&&files.length){const r=new FileReader();r.onload=ev=>{el.value=ev.target.result;el.dispatchEvent(new Event("input"))};r.readAsText(files[0])}
+    });
+  });
+}
+
+// ===== WORKSPACES (PROJECTS) =====
+function loadProjects(){try{return JSON.parse(localStorage.getItem("projects")||"[]")}catch{return[]}}
+function saveProjects(list){localStorage.setItem("projects",JSON.stringify(list))}
+function saveCurrentProject(){
+  const name=prompt("Название проекта (например: 'Casino-DE-Site'):");
+  if(!name)return;
+  const projects=loadProjects();
+  const proj={
+    id:Date.now().toString(),
+    name,
+    date:new Date().toLocaleString("ru"),
+    settings:{
+      topic:document.getElementById("topic")?.value,
+      lang:document.getElementById("lang")?.value,
+      country:document.getElementById("country")?.value,
+      currency:document.getElementById("currency")?.value,
+      license:document.getElementById("license")?.value,
+      style:selectedStyle,
+      tone:document.getElementById("tone")?.value,
+      provider:selectedProvider,
+      model:document.getElementById("model-select")?.value,
+      keywords:[...keywords],
+      lsi:[...lsiWords],
+      chapters:[...chapters],
+      cta:[...ctaButtons]
+    }
+  };
+  projects.unshift(proj);
+  if(projects.length>30)projects.length=30;
+  saveProjects(projects);renderProjects();
+  alert("✅ Проект '"+name+"' сохранён");
+}
+function loadProject(id){
+  const projects=loadProjects();
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  const s=p.settings;
+  if(s.topic)document.getElementById("topic").value=s.topic;
+  if(s.lang)document.getElementById("lang").value=s.lang;
+  if(s.country)document.getElementById("country").value=s.country;
+  if(s.currency)document.getElementById("currency").value=s.currency;
+  if(s.license)document.getElementById("license").value=s.license;
+  if(s.tone)document.getElementById("tone").value=s.tone;
+  if(s.style){selectedStyle=s.style;renderStyles()}
+  if(s.provider){selectedProvider=s.provider;renderProviders()}
+  if(s.model)document.getElementById("model-select").value=s.model;
+  if(s.keywords){keywords=[...s.keywords];renderKeywords()}
+  if(s.lsi){lsiWords=[...s.lsi];renderLSI()}
+  if(s.chapters){chapters=[...s.chapters];renderChapters()}
+  if(s.cta){ctaButtons=[...s.cta];renderCTABtns()}
+  alert("✅ Проект '"+p.name+"' загружен");
+}
+function deleteProject(id){if(!confirm("Удалить проект?"))return;saveProjects(loadProjects().filter(p=>p.id!==id));renderProjects()}
+function renderProjects(){
+  const c=document.getElementById("projects-list");if(!c)return;
+  const list=loadProjects();
+  if(!list.length){c.innerHTML='<div style="text-align:center;color:#475569;font-size:11px;padding:10px">Нет сохранённых проектов</div>';return}
+  c.innerHTML="";
+  list.forEach(p=>{
+    c.innerHTML+=`<div onclick="loadProject('${p.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:#080f1a;border:1px solid #1e293b;margin-bottom:3px;cursor:pointer"><span style="font-size:14px">📁</span><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:#22d3ee;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div><div style="font-size:9px;color:#475569">${p.date}</div></div><button onclick="event.stopPropagation();deleteProject('${p.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:11px">✕</button></div>`;
+  });
+}
+function exportProjects(){
+  const data={projects:loadProjects(),keys:{},date:new Date().toISOString()};
+  // Don't export keys for security
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="article-writer-workspace-"+new Date().toISOString().split("T")[0]+".json";a.click();
+}
+function importProjects(file){
+  if(!file)return;
+  const r=new FileReader();r.onload=e=>{
+    try{const data=JSON.parse(e.target.result);
+      if(data.projects){
+        const current=loadProjects();
+        saveProjects([...data.projects,...current]);renderProjects();
+        alert("✅ Импортировано "+data.projects.length+" проектов");
+      }
+    }catch(err){alert("⚠ Ошибка: "+err.message)}
+  };r.readAsText(file);
+}
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded",function(){
   init();
@@ -2155,6 +2455,9 @@ document.addEventListener("DOMContentLoaded",function(){
   if(chatAllChats.length){chatCurrentId=chatAllChats[0].id;chatMsgs=chatAllChats[0].msgs||[];chatRenderHistory()}
   else chatNew();
   renderArticleHistory();
+  renderProjects();
+  loadWPCreds();
+  initDragDrop();
   if(localStorage.getItem("theme")==="light")toggleTheme();
 });
 </script>
