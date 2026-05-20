@@ -1043,7 +1043,7 @@ function switchTab(id,btn){
   if(id==="preview")renderPreview("preview-iframe",generatedCode);
   if(id==="split"){document.getElementById("split-area").value=generatedCode;updateSplitLines();renderPreview("split-iframe",generatedCode)}
 }
-function enableOutputTabs(){["tab-code","tab-preview","tab-split"].forEach(id=>{document.getElementById(id).disabled=false})}
+function enableOutputTabs(){["tab-preview","tab-split"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=false})}
 
 // ===== CODE EDITOR =====
 function updateLines(){const a=document.getElementById("code-area"),l=document.getElementById("code-lines");l.innerHTML=a.value.split("\n").map((_,i)=>i+1).join("<br>")}
@@ -2394,16 +2394,16 @@ function loadProject(id){
   const projects=loadProjects();
   const p=projects.find(x=>x.id===id);if(!p)return;
   const s=p.settings;
-  if(s.topic)document.getElementById("topic").value=s.topic;
-  if(s.lang)document.getElementById("lang").value=s.lang;
-  if(s.country)document.getElementById("country").value=s.country;
-  if(s.currency)document.getElementById("currency").value=s.currency;
-  if(s.license)document.getElementById("license").value=s.license;
-  if(s.tone)document.getElementById("tone").value=s.tone;
+  if(s.topic!==undefined){const e=document.getElementById("topic");if(e)e.value=s.topic||""}
+  if(s.lang!==undefined){const e=document.getElementById("lang");if(e)e.value=s.lang||""}
+  if(s.country!==undefined){const e=document.getElementById("country");if(e)e.value=s.country||""}
+  if(s.currency!==undefined){const e=document.getElementById("currency");if(e)e.value=s.currency||""}
+  if(s.license!==undefined){const e=document.getElementById("license");if(e)e.value=s.license||""}
+  if(s.tone!==undefined){const e=document.getElementById("tone");if(e)e.value=s.tone||"neutral"}
   if(s.style){selectedStyle=s.style;renderStyles()}
   if(s.provider){selectedProvider=s.provider;renderProviders()}
-  if(s.model)document.getElementById("model-select").value=s.model;
-  if(s.keywords){keywords=[...s.keywords];renderKeywords()}
+  if(s.model!==undefined){const e=document.getElementById("model-select");if(e)e.value=s.model||""}
+  if(s.keywords){keywords=[...s.keywords];renderKW()}
   if(s.lsi){lsiWords=[...s.lsi];renderLSI()}
   if(s.chapters){chapters=[...s.chapters];renderChapters()}
   if(s.cta){ctaButtons=[...s.cta];renderCTABtns()}
